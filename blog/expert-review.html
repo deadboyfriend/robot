@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Robot Pet Project — Expert Review</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🤖</div>
+    <div class="logo-title">Robot Pet<br>Project</div>
+    <div class="logo-sub">SR8855 → AI Companion</div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section">Navigation</div>
+    <a href="index.html" class="nav-link"><span class="nav-icon">⌂</span> Overview</a>
+    <a href="phases.html" class="nav-link"><span class="nav-icon">◈</span> Phases</a>
+    <a href="hardware.html" class="nav-link"><span class="nav-icon">⚙</span> Hardware</a>
+    <a href="power.html" class="nav-link"><span class="nav-icon">⚡</span> Power System</a>
+    <a href="wiring.html" class="nav-link"><span class="nav-icon">⌁</span> Wiring</a>
+    <a href="software.html" class="nav-link"><span class="nav-icon">◻</span> Software</a>
+    <a href="decisions.html" class="nav-link"><span class="nav-icon">✦</span> Decision Log</a>
+    <a href="expert-review.html" class="nav-link active"><span class="nav-icon">◉</span> Expert Review</a>
+  </div>
+  <div class="sidebar-footer">
+    <div class="status-pill"><span class="status-dot"></span> Phase 1 — Active</div>
+  </div>
+</nav>
+
+<main class="main">
+  <div class="page-header">
+    <div class="page-eyebrow">Independent Engineering Peer Review</div>
+    <h1 class="page-title">Expert <span>Review</span></h1>
+    <p class="page-desc">Full technical review conducted by an independent senior electronics and robotics engineer persona. Findings structured as Critical → Significant → Minor. All settled decisions respected — only gaps and improvements flagged.</p>
+  </div>
+
+  <div class="content">
+
+    <div class="section">
+      <div class="section-title">Overall Assessment</div>
+      <div class="card card-amber">
+        <p>The architecture is sound and all key decisions are correct. The critical items must be addressed before first power-on — several would cause immediate hardware damage. The significant items are Phase 1 and 2 design work that can be incorporated without disrupting the plan. None of these require reversing settled decisions — they are additions, not corrections.</p>
+        <p style="margin-bottom:0"><strong style="color:var(--amber)">Most likely first failure without action:</strong> A motor startup spike destroys the MDD10A on the first real drive test. A 470µF capacitor prevents it entirely.</p>
+      </div>
+
+      <div class="grid-3">
+        <div class="card" style="border-color:rgba(248,113,113,0.3)">
+          <div style="font-family:var(--font-mono);font-size:28px;color:#F87171;margin-bottom:4px">4</div>
+          <div style="font-size:12px;color:var(--text2)">Critical — fix before<br>first power-on</div>
+        </div>
+        <div class="card card-amber">
+          <div style="font-family:var(--font-mono);font-size:28px;color:var(--amber);margin-bottom:4px">7</div>
+          <div style="font-size:12px;color:var(--text2)">Significant — address<br>in Phase 1/2 design</div>
+        </div>
+        <div class="card card-cyan">
+          <div style="font-family:var(--font-mono);font-size:28px;color:var(--cyan);margin-bottom:4px">5</div>
+          <div style="font-size:12px;color:var(--text2)">Minor — incorporate<br>when convenient</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CRITICAL -->
+    <div class="section">
+      <div class="section-title" style="color:#F87171">🔴 Critical — Fix Before First Power-On</div>
+
+      <div class="card" style="border-color:rgba(248,113,113,0.3);margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+          <div style="background:rgba(248,113,113,0.15);border:1px solid rgba(248,113,113,0.3);border-radius:6px;padding:4px 12px;font-family:var(--font-mono);font-size:11px;color:#F87171">CR-01</div>
+          <h3>Decoupling capacitor missing at MDD10A VMOT</h3>
+        </div>
+        <p style="font-size:13px">When motors start, stop, or reverse, they generate voltage spikes back up the supply line (back-EMF). Without a large bulk capacitor across VMOT and GND, physically close to the driver board, these spikes can exceed the MDD10A's 30V absolute maximum and destroy it instantly. This is the most common cause of motor driver death in beginner builds — and it happens fast, with no warning.</p>
+        <div class="info-box" style="margin-top:12px;margin-bottom:0">
+          <strong>Fix:</strong> Add a <strong>470µF–1000µF electrolytic capacitor, rated 35V+</strong>, directly across the VMOT and GND terminals on the breadboard, positioned as close to the MDD10A as possible. Observe polarity — stripe = negative. Cost: approximately 50p. This is the highest priority item in this entire review.
+        </div>
+      </div>
+
+      <div class="card" style="border-color:rgba(248,113,113,0.3);margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+          <div style="background:rgba(248,113,113,0.15);border:1px solid rgba(248,113,113,0.3);border-radius:6px;padding:4px 12px;font-family:var(--font-mono);font-size:11px;color:#F87171">CR-02</div>
+          <h3>SR8855 sensor output voltages unverified — Pi GPIO at risk</h3>
+        </div>
+        <p style="font-size:13px">The SR8855 sensors (cliff, obstacle, bump, Hall encoders) were originally powered and signalled at voltages derived from the Samsung PCB. Although the PCB shows a 3.3V rail, individual sensors may output 5V signals — particularly the obstacle IR sensors and Hall encoders. Connecting a 5V signal directly to Pi 4 GPIO will destroy the GPIO bank immediately and silently. The Pi 4 GPIO is not 5V-tolerant.</p>
+        <div class="warn-box" style="margin-top:12px;margin-bottom:0">
+          <strong>Fix:</strong> Before connecting any OEM sensor to the Pi, power it from 3.3V and measure its output signal voltage with your multimeter in both states (triggered and clear). If output exceeds 3.4V, add a voltage divider (two resistors: 10kΩ from signal to Pi GPIO, 20kΩ from Pi GPIO to GND) to drop it to 3.3V-safe levels. Check ALL sensors individually — they may not all be the same.
+        </div>
+      </div>
+
+      <div class="card" style="border-color:rgba(248,113,113,0.3);margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+          <div style="background:rgba(248,113,113,0.15);border:1px solid rgba(248,113,113,0.3);border-radius:6px;padding:4px 12px;font-family:var(--font-mono);font-size:11px;color:#F87171">CR-03</div>
+          <h3>No hardware watchdog configured</h3>
+        </div>
+        <p style="font-size:13px">If the Pi crashes during operation — which it will during software development — the last motor command stays active indefinitely. The robot will drive full speed into a wall, fall down stairs, or run until the battery dies. The Pi 4 has a hardware watchdog timer built in. Without it, a Python exception or kernel panic leaves motors running with no way to stop them.</p>
+        <div class="info-box" style="margin-top:12px;margin-bottom:0">
+          <strong>Fix:</strong> Enable from day one. Add <code>dtparam=watchdog=on</code> to <code>/boot/config.txt</code>. Install the <code>watchdog</code> package and configure it with a 15-second timeout. The watchdog daemon must be started before the robot code. See Software page for full setup. This is not optional on any mobile robot.
+        </div>
+      </div>
+
+      <div class="card" style="border-color:rgba(248,113,113,0.3)">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+          <div style="background:rgba(248,113,113,0.15);border:1px solid rgba(248,113,113,0.3);border-radius:6px;padding:4px 12px;font-family:var(--font-mono);font-size:11px;color:#F87171">CR-04</div>
+          <h3>Breadboard power rails cannot handle motor startup current</h3>
+        </div>
+        <p style="font-size:13px">Standard solderless breadboards are rated at approximately 1A continuous through the internal copper strips. DC motors draw 5–10× their running current during startup (stall current). The SR8855's drive motors are substantial — stall current could easily be 3–5A per motor. Running motor power through breadboard rails risks melting the copper strips, causing intermittent failures that are nearly impossible to diagnose.</p>
+        <div class="warn-box" style="margin-top:12px;margin-bottom:0">
+          <strong>Fix:</strong> Motor power (VMOT and GND from battery) must connect <strong>directly to the MDD10A screw terminals</strong> via rated wire (at least 20AWG), completely bypassing the breadboard. Only signal wires (PWM, DIR, GND reference) pass through the breadboard. This is non-negotiable for safe bench testing.
+        </div>
+      </div>
+    </div>
+
+    <!-- SIGNIFICANT -->
+    <div class="section">
+      <div class="section-title" style="color:var(--amber)">🟡 Significant — Phase 1 & 2 Design Work</div>
+
+      <div class="grid-2">
+        <div class="card card-amber">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <div style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);border-radius:6px;padding:3px 10px;font-family:var(--font-mono);font-size:10px;color:var(--amber)">SG-01</div>
+            <h3 style="font-size:13px">Hall encoder interface architecture</h3>
+          </div>
+          <p style="font-size:12px;color:var(--text2)">Python's RPi.GPIO interrupt callbacks miss pulses at high rates due to the GIL and OS scheduler. Use <strong>pigpio's callback system</strong> instead — it handles interrupts in a separate C thread. Without this, odometry will drop pulses during YOLOv8 inference (Phase 2) making navigation unreliable. Plan this architecture in Phase 1 software even if tuning comes in Phase 2.</p>
+        </div>
+
+        <div class="card card-amber">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <div style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);border-radius:6px;padding:3px 10px;font-family:var(--font-mono);font-size:10px;color:var(--amber)">SG-02</div>
+            <h3 style="font-size:13px">Emergency stop button required</h3>
+          </div>
+          <p style="font-size:12px;color:var(--text2)">A physical emergency stop is essential on any mobile robot in a family home with children. Wire a normally-closed pushbutton in series with the motor battery supply, or wire one to a GPIO that triggers an immediate software stop and PWM disable. Mount it accessibly on the chassis. You will need this during development. Non-negotiable.</p>
+        </div>
+
+        <div class="card card-amber">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <div style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);border-radius:6px;padding:3px 10px;font-family:var(--font-mono);font-size:10px;color:var(--amber)">SG-03</div>
+            <h3 style="font-size:13px">NeoPixel data line needs level shifter</h3>
+          </div>
+          <p style="font-size:12px;color:var(--text2)">WS2812B NeoPixels require a 5V data signal (logic HIGH ≥ 3.5V). Pi 4 GPIO outputs 3.3V. This often "works" but is unreliable — particularly causing intermittent flicker and colour glitches. A <strong>74AHCT125 level shifter</strong> (£1) on the data line converts 3.3V to 5V correctly. Many tutorials skip this; don't be caught by it in Phase 3.</p>
+        </div>
+
+        <div class="card card-amber">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <div style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);border-radius:6px;padding:3px 10px;font-family:var(--font-mono);font-size:10px;color:var(--amber)">SG-04</div>
+            <h3 style="font-size:13px">WiFi signal attenuation inside chassis</h3>
+          </div>
+          <p style="font-size:12px;color:var(--text2)">The Pi 4's on-board WiFi antenna is surrounded by Ryobi battery cells, motor housings, and metal chassis components. Phase 4 depends on reliable WiFi for Ollama API calls. Test RSSI signal strength with the robot assembled and closed before committing to Phase 4. A USB WiFi adapter with external antenna resolves this if needed.</p>
+        </div>
+
+        <div class="card card-amber">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <div style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);border-radius:6px;padding:3px 10px;font-family:var(--font-mono);font-size:10px;color:var(--amber)">SG-05</div>
+            <h3 style="font-size:13px">Pi 4 thermal management under AI load</h3>
+          </div>
+          <p style="font-size:12px;color:var(--text2)">Running YOLOv8-nano continuously (Phase 2) and Faster-Whisper (Phase 4) will push the Pi 4 to thermal throttle without cooling. In an enclosed chassis with motors nearby, ambient temperature is elevated. A heatsink on the SoC is the absolute minimum. The plywood plate should have standoffs creating at least 10mm airspace under the Pi. Without this, Phase 2 frame rate will be significantly below 5–8fps.</p>
+        </div>
+
+        <div class="card card-amber">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <div style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);border-radius:6px;padding:3px 10px;font-family:var(--font-mono);font-size:10px;color:var(--amber)">SG-06</div>
+            <h3 style="font-size:13px">Motor velocity PID control loop</h3>
+          </div>
+          <p style="font-size:12px;color:var(--text2)">Using PWM duty cycle as proxy for motor speed means the robot veers inconsistently across surfaces. The Hall encoders provide actual wheel velocity — a PID controller that adjusts PWM to maintain target RPM transforms navigation consistency. Design this into Phase 1 software even if tuning comes later. The encoder infrastructure must be correct first (see SG-01).</p>
+        </div>
+
+        <div class="card card-amber" style="grid-column: 1 / -1">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <div style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);border-radius:6px;padding:3px 10px;font-family:var(--font-mono);font-size:10px;color:var(--amber)">SG-07</div>
+            <h3 style="font-size:13px">Buck converter quality verification before connecting Pi</h3>
+          </div>
+          <p style="font-size:12px;color:var(--text2)">AliExpress buck converters vary enormously in quality. The Pi 4 is sensitive to supply voltage — it needs stable 5V with low ripple. Cheap converters often produce 100mV+ output ripple under varying loads, causing subtle Pi instability that is extremely hard to diagnose. <strong>Before connecting the Pi:</strong> measure the converter's output with a 10Ω dummy load resistor attached. Output should stay within ±0.1V of 5V. If it doesn't, replace with a DROK or Pololu unit. This is a £3 part protecting a £75 computer.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MINOR -->
+    <div class="section">
+      <div class="section-title" style="color:var(--cyan)">🔵 Minor / Nice-to-Have</div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Ref</th><th>Finding</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><code>MN-01</code></td>
+              <td><strong>SD card wear</strong> — Continuous writes to memory.json and logs will wear out the SD card within 6–18 months of heavy use.</td>
+              <td>Install <code>log2ram</code> immediately. Keeps logs in RAM, syncs to SD periodically. Batch memory.json writes rather than per-interaction.</td>
+            </tr>
+            <tr>
+              <td><code>MN-02</code></td>
+              <td><strong>Motor stall detection</strong> — MDD10A has no current sensing. A stalled motor draws continuous high current without the robot knowing it's stuck.</td>
+              <td>Add <strong>INA219 current sensor module</strong> (I2C, £2) in series with each motor supply. Detect stall = current spike without velocity change from encoders.</td>
+            </tr>
+            <tr>
+              <td><code>MN-03</code></td>
+              <td><strong>Connector standardisation</strong> — Bare wires and jumpers will become an unmaintainable tangle across phases.</td>
+              <td>Adopt JST-PH (2mm) for signal connectors and JST-XH (2.5mm) for moderate power from Phase 1. Keyed so they can't be misinserted. Define this standard now, not later.</td>
+            </tr>
+            <tr>
+              <td><code>MN-04</code></td>
+              <td><strong>Plywood moisture absorption</strong> — Unfinished plywood absorbs moisture, swells, and warps — particularly under Pi heat cycling.</td>
+              <td>Seal all surfaces and cut edges with diluted PVA or varnish before assembly. Takes 20 minutes. Prevents mounting plate distortion over months of use.</td>
+            </tr>
+            <tr>
+              <td><code>MN-05</code></td>
+              <td><strong>Fuse ratings need calculating</strong> — The Ryobi adapter fuse rating matters. Too low = blows on motor startup. Too high = doesn't protect against shorts.</td>
+              <td>Motor battery line: <strong>15A fuse</strong> (handles startup current, blows before wiring catches fire). Electronics battery line: <strong>3A fuse</strong> (Pi + sensors max ~2A).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ACTION CHECKLIST -->
+    <div class="section">
+      <div class="section-title">Action Checklist — Before First Power-On</div>
+      <div class="card">
+        <ul class="styled">
+          <li><strong>CR-01</strong> Order 470µF–1000µF 35V+ electrolytic capacitor. Wire across MDD10A VMOT/GND before connecting any motor.</li>
+          <li><strong>CR-02</strong> Verify every OEM sensor output voltage with multimeter before connecting to Pi GPIO. Document results.</li>
+          <li><strong>CR-03</strong> Enable Pi hardware watchdog. Install and configure watchdog daemon with 15s timeout.</li>
+          <li><strong>CR-04</strong> Route motor battery power directly to MDD10A terminals, not through breadboard rails.</li>
+          <li><strong>SG-02</strong> Wire physical emergency stop button before first chassis test on floor.</li>
+          <li><strong>SG-07</strong> Verify buck converter output with dummy load before connecting Pi. Check for ripple and voltage stability.</li>
+          <li><strong>MN-04</strong> Seal plywood plate before mounting electronics.</li>
+          <li><strong>MN-05</strong> Confirm Ryobi adapter fuse ratings: 15A motor line, 3A electronics line.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</main>
+</body>
+</html>

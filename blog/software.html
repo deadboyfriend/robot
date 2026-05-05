@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Robot Pet Project — Software</title>
-<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -16,13 +16,14 @@
   </div>
   <div class="sidebar-nav">
     <div class="nav-section">Navigation</div>
-    <a href="/index.html" class="nav-link"><span class="nav-icon">⌂</span> Overview</a>
-    <a href="/phases.html" class="nav-link"><span class="nav-icon">◈</span> Phases</a>
-    <a href="/hardware.html" class="nav-link"><span class="nav-icon">⚙</span> Hardware</a>
-    <a href="/power.html" class="nav-link"><span class="nav-icon">⚡</span> Power System</a>
-    <a href="/wiring.html" class="nav-link"><span class="nav-icon">⌁</span> Wiring</a>
-    <a href="/software.html" class="nav-link active"><span class="nav-icon">◻</span> Software</a>
-    <a href="/decisions.html" class="nav-link"><span class="nav-icon">✦</span> Decision Log</a>
+    <a href="index.html" class="nav-link"><span class="nav-icon">⌂</span> Overview</a>
+    <a href="phases.html" class="nav-link"><span class="nav-icon">◈</span> Phases</a>
+    <a href="hardware.html" class="nav-link"><span class="nav-icon">⚙</span> Hardware</a>
+    <a href="power.html" class="nav-link"><span class="nav-icon">⚡</span> Power System</a>
+    <a href="wiring.html" class="nav-link"><span class="nav-icon">⌁</span> Wiring</a>
+    <a href="software.html" class="nav-link active"><span class="nav-icon">◻</span> Software</a>
+    <a href="decisions.html" class="nav-link"><span class="nav-icon">✦</span> Decision Log</a>
+    <a href="expert-review.html" class="nav-link"><span class="nav-icon">◉</span> Expert Review</a>
   </div>
   <div class="sidebar-footer">
     <div class="status-pill"><span class="status-dot"></span> Phase 1 — Active</div>
@@ -59,9 +60,60 @@ source ~/robot-env/bin/activate
 # Install core libraries (Phase 1)
 pip install RPi.GPIO gpiozero pigpio
 
-# Enable pigpio daemon (needed for hardware PWM)
+# Enable pigpio daemon (needed for hardware PWM and encoder interrupts)
 sudo systemctl enable pigpiod
 sudo systemctl start pigpiod</pre>
+      </div>
+
+      <div class="card" style="margin-top:0">
+        <h3>Hardware watchdog — CRITICAL, set up immediately</h3>
+        <p style="font-size:13px;color:var(--text2);margin-top:8px;margin-bottom:14px">Without a watchdog, a Pi crash leaves the last motor command running indefinitely. This is not optional on a mobile robot. If Python throws an unhandled exception or the kernel panics, the robot will drive into walls or fall down stairs until the battery dies.</p>
+        <pre>
+# Step 1: Enable hardware watchdog in boot config
+echo 'dtparam=watchdog=on' | sudo tee -a /boot/config.txt
+
+# Step 2: Install watchdog daemon
+sudo apt install -y watchdog
+
+# Step 3: Configure watchdog
+sudo nano /etc/watchdog.conf
+# Set these values:
+# watchdog-device = /dev/watchdog
+# watchdog-timeout = 15
+# interval = 5
+# max-load-1 = 24
+
+# Step 4: Enable and start
+sudo systemctl enable watchdog
+sudo systemctl start watchdog
+
+# Step 5: Verify watchdog is running
+sudo systemctl status watchdog</pre>
+      </div>
+
+      <div class="card" style="margin-top:0">
+        <h3>log2ram — SD card wear protection</h3>
+        <p style="font-size:13px;color:var(--text2);margin-top:8px;margin-bottom:14px">Continuous log writes and memory.json updates will wear out an SD card within 6–18 months. log2ram keeps all writes in RAM and syncs to SD periodically, dramatically extending card life.</p>
+        <pre>
+# Install log2ram
+echo "deb [signed-by=/usr/share/keyrings/azlux-archive-keyring.gpg] \
+  http://packages.azlux.fr/debian/ stable main" | \
+  sudo tee /etc/apt/sources.list.d/azlux.list
+
+sudo wget -O /usr/share/keyrings/azlux-archive-keyring.gpg \
+  https://azlux.fr/repo.gpg
+
+sudo apt update && sudo apt install log2ram
+
+# Configure log2ram size (default 40MB is fine for this project)
+sudo nano /etc/log2ram.conf
+# SIZE=40M (increase to 100M if using verbose logging)
+
+sudo systemctl enable log2ram
+sudo reboot
+
+# Verify after reboot
+mount | grep log2ram</pre>
       </div>
     </div>
 
@@ -162,7 +214,76 @@ finally:
       </div>
 
       <div class="card" style="margin-top:0">
-        <h3>Wandering behaviour</h3>
+        <h3>Hall encoder counting — use pigpio NOT RPi.GPIO</h3>
+        <p style="font-size:13px;color:var(--text2);margin-top:8px;margin-bottom:14px">Python's RPi.GPIO interrupt callbacks miss pulses at high rates due to the GIL and OS scheduler. pigpio handles encoder interrupts in a separate C thread and is reliable. This matters especially in Phase 2 when YOLOv8 is consuming CPU — RPi.GPIO will drop encoder pulses during inference.</p>
+        <pre>
+import pigpio
+
+ENCODER_LEFT  = 22   # GPIO pin for left wheel Hall sensor
+ENCODER_RIGHT = 23   # GPIO pin for right wheel Hall sensor
+
+pi = pigpio.pi()
+
+left_count = 0
+right_count = 0
+
+def left_encoder_callback(gpio, level, tick):
+    global left_count
+    left_count += 1
+
+def right_encoder_callback(gpio, level, tick):
+    global right_count
+    right_count += 1
+
+# pigpio callbacks run in C thread — immune to Python GIL
+left_cb  = pi.callback(ENCODER_LEFT,  pigpio.RISING_EDGE, left_encoder_callback)
+right_cb = pi.callback(ENCODER_RIGHT, pigpio.RISING_EDGE, right_encoder_callback)
+
+# Pulses per revolution depends on SR8855 motor encoder resolution
+# Measure empirically: count pulses for one full wheel rotation
+PULSES_PER_REV = 20   # placeholder — verify with actual hardware
+WHEEL_CIRCUMFERENCE_MM = 220  # measure actual wheel diameter</pre>
+      </div>
+
+      <div class="card" style="margin-top:0">
+        <h3>PID velocity control loop</h3>
+        <p style="font-size:13px;color:var(--text2);margin-top:8px;margin-bottom:14px">Raw PWM duty cycle is a poor proxy for motor speed — the robot veers inconsistently across surfaces and battery states. A PID loop that reads encoder velocity and adjusts PWM to maintain target speed is the correct approach. Design this from Phase 1 even if PID tuning comes later.</p>
+        <pre>
+import time
+
+class VelocityPID:
+    def __init__(self, kp=0.5, ki=0.1, kd=0.05):
+        self.kp, self.ki, self.kd = kp, ki, kd
+        self.prev_error = 0
+        self.integral = 0
+        self.last_time = time.time()
+
+    def compute(self, target_rpm, actual_rpm):
+        now = time.time()
+        dt = now - self.last_time
+        if dt <= 0: return 0
+
+        error = target_rpm - actual_rpm
+        self.integral += error * dt
+        derivative = (error - self.prev_error) / dt
+
+        output = (self.kp * error +
+                  self.ki * self.integral +
+                  self.kd * derivative)
+
+        self.prev_error = error
+        self.last_time = now
+        return max(0, min(255, output))  # clamp to PWM range
+
+pid_left  = VelocityPID()
+pid_right = VelocityPID()
+
+# Usage in control loop:
+# target = 60  # RPM
+# actual_left = measure_rpm(left_count)   # from encoder
+# pwm_left = pid_left.compute(target, actual_left)
+# Tune kp, ki, kd empirically on actual hardware</pre>
+      </div>
         <pre>
 def wander():
     """Basic autonomous wandering with cliff + bump avoidance."""

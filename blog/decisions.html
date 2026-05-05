@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Robot Pet Project — Decision Log</title>
-<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -16,13 +16,13 @@
   </div>
   <div class="sidebar-nav">
     <div class="nav-section">Navigation</div>
-    <a href="/index.html" class="nav-link"><span class="nav-icon">⌂</span> Overview</a>
-    <a href="/phases.html" class="nav-link"><span class="nav-icon">◈</span> Phases</a>
-    <a href="/hardware.html" class="nav-link"><span class="nav-icon">⚙</span> Hardware</a>
-    <a href="/power.html" class="nav-link"><span class="nav-icon">⚡</span> Power System</a>
-    <a href="/wiring.html" class="nav-link"><span class="nav-icon">⌁</span> Wiring</a>
-    <a href="/software.html" class="nav-link"><span class="nav-icon">◻</span> Software</a>
-    <a href="/decisions.html" class="nav-link active"><span class="nav-icon">✦</span> Decision Log</a>
+    <a href="index.html" class="nav-link"><span class="nav-icon">⌂</span> Overview</a>
+    <a href="phases.html" class="nav-link"><span class="nav-icon">◈</span> Phases</a>
+    <a href="hardware.html" class="nav-link"><span class="nav-icon">⚙</span> Hardware</a>
+    <a href="power.html" class="nav-link"><span class="nav-icon">⚡</span> Power System</a>
+    <a href="wiring.html" class="nav-link"><span class="nav-icon">⌁</span> Wiring</a>
+    <a href="software.html" class="nav-link"><span class="nav-icon">◻</span> Software</a>
+    <a href="decisions.html" class="nav-link active"><span class="nav-icon">✦</span> Decision Log</a>
   </div>
   <div class="sidebar-footer">
     <div class="status-pill"><span class="status-dot"></span> Phase 1 — Active</div>
@@ -182,6 +182,82 @@
           <p style="font-size:13px"><strong>The SR8855's two sweeper motors are repurposed as Phase 3 expression actuators</strong> — driving physical ears, antennae, or other appendages that convey mood through movement.</p>
           <div class="adr-section">Rationale</div>
           <p style="font-size:13px">Physical movement is categorically more powerful for anthropomorphisation than lights or sound alone. The sweeper motors are already gear-reduced (slow, low-torque — perfect for expressive movement), already in the chassis, and at zero cost. Compare WALL-E's eye movements or a dog's ears — physical expression is what makes observers emotionally bond with robots. This single reuse decision significantly raises the character ceiling of Phase 3 without adding cost or new components.</p>
+        </div>
+      </div>
+
+      <div class="adr">
+        <div class="adr-header">
+          <div class="adr-id">ADR-010</div>
+          <div class="adr-title">Separate power domains for electronics and motors</div>
+          <span class="badge badge-green">Accepted</span>
+        </div>
+        <div class="adr-body">
+          <div class="adr-section">Decision</div>
+          <p style="font-size:13px"><strong>Two Ryobi ONE+ batteries, deliberately separated:</strong> Battery 1 (smaller, 2Ah) powers the Pi and all electronics via buck converter. Battery 2 (larger, 6.5Ah+) powers the drive motors via Cytron MDD10A. Shared common GND between domains.</p>
+          <div class="adr-section">Rationale</div>
+          <p style="font-size:13px">DC motors generate significant electrical noise on the power supply rail — back-EMF spikes, PWM switching noise, and startup current spikes. If Pi and motors share a supply, this noise causes GPIO glitches, sensor false readings, and Pi crashes at exactly the moment the robot hits something. Separate batteries physically break the noise path. Secondary benefit: if the motor battery depletes, the Pi remains live — the robot can express distress and request help rather than dying silently. This problem was identified proactively during planning; discovering it through debugging would have been a very difficult investigation.</p>
+        </div>
+      </div>
+
+      <div class="adr">
+        <div class="adr-header">
+          <div class="adr-id">ADR-011</div>
+          <div class="adr-title">Hardware watchdog timer mandatory from Phase 1</div>
+          <span class="badge badge-green">Accepted</span>
+        </div>
+        <div class="adr-body">
+          <div class="adr-section">Context</div>
+          <p style="font-size:13px">Identified in independent expert review as a critical safety omission. Without a watchdog, any Pi crash, Python exception, or kernel panic leaves the last motor command active indefinitely — the robot will drive until it hits something, falls, or the battery dies.</p>
+          <div class="adr-section">Decision</div>
+          <p style="font-size:13px"><strong>Pi hardware watchdog enabled on first boot.</strong> <code>watchdog</code> daemon installed, configured with 15-second timeout, enabled as systemd service. Robot software must "pet" the watchdog continuously; failure triggers a Pi reset which stops all motors.</p>
+          <div class="adr-section">Rationale</div>
+          <p style="font-size:13px">Non-negotiable on any mobile robot, particularly in a family home with children. The risk of an uncontrolled robot is not acceptable. This is especially important during Phase 1 development when crashes are frequent and expected.</p>
+        </div>
+      </div>
+
+      <div class="adr">
+        <div class="adr-header">
+          <div class="adr-id">ADR-012</div>
+          <div class="adr-title">Motor power bypasses breadboard — direct to MDD10A terminals</div>
+          <span class="badge badge-green">Accepted</span>
+        </div>
+        <div class="adr-body">
+          <div class="adr-section">Context</div>
+          <p style="font-size:13px">Identified in expert review as a critical wiring constraint. Standard breadboards are rated ~1A through internal copper strips. SR8855 drive motors can draw 3–5A stall current — well above breadboard limits.</p>
+          <div class="adr-section">Decision</div>
+          <p style="font-size:13px"><strong>Motor battery positive and negative connect directly to MDD10A screw terminals via rated wire (20AWG+)</strong>, completely bypassing breadboard rails. Only signal wires (PWM, DIR, GND reference) pass through the breadboard.</p>
+          <div class="adr-section">Rationale</div>
+          <p style="font-size:13px">Exceeding breadboard current ratings melts the internal copper strips, causing intermittent contact failures that are nearly impossible to diagnose. These failures are not obvious visually and can take hours to identify. Routing motor power directly is simpler and correct.</p>
+        </div>
+      </div>
+
+      <div class="adr">
+        <div class="adr-header">
+          <div class="adr-id">ADR-013</div>
+          <div class="adr-title">OEM sensor voltage verification protocol before Pi GPIO connection</div>
+          <span class="badge badge-green">Accepted</span>
+        </div>
+        <div class="adr-body">
+          <div class="adr-section">Context</div>
+          <p style="font-size:13px">The Pi 4's GPIO pins are 3.3V logic and are NOT 5V tolerant. SR8855 OEM sensors were originally interfaced with the Samsung PCB which had both 3.3V and 5V rails. Individual sensor output voltages are unknown without measurement.</p>
+          <div class="adr-section">Decision</div>
+          <p style="font-size:13px"><strong>Every OEM sensor must have its output voltage verified with a multimeter before connection to Pi GPIO.</strong> Procedure: power sensor from 3.3V, trigger it, measure output. If output exceeds 3.4V, add voltage divider (10kΩ + 20kΩ resistors) before the Pi GPIO pin. Results documented in the wiring guide.</p>
+          <div class="adr-section">Rationale</div>
+          <p style="font-size:13px">A 5V signal connected to a Pi 4 GPIO pin destroys the GPIO bank instantly and permanently — a £75 repair requiring a new Pi. The verification procedure takes 5 minutes per sensor. The asymmetry of consequence vs effort makes this a mandatory protocol.</p>
+        </div>
+      </div>
+
+      <div class="adr">
+        <div class="adr-header">
+          <div class="adr-id">ADR-014</div>
+          <div class="adr-title">VMOT decoupling capacitor mandatory on motor driver</div>
+          <span class="badge badge-green">Accepted</span>
+        </div>
+        <div class="adr-body">
+          <div class="adr-section">Decision</div>
+          <p style="font-size:13px"><strong>A 470µF–1000µF electrolytic capacitor (35V+ rated) is fitted across MDD10A VMOT and GND before first motor power-on.</strong> Positioned as physically close to the driver as possible. This is a mandatory component addition — not optional.</p>
+          <div class="adr-section">Rationale</div>
+          <p style="font-size:13px">Motor back-EMF spikes during start/stop/reversal can transiently exceed the MDD10A's 30V absolute maximum, destroying it. This is the most common single cause of beginner motor driver failure. A 50p capacitor protects a £24 board. The expert review identified this as the single highest-priority finding — the most likely failure mode without correction.</p>
         </div>
       </div>
 

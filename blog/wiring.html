@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Robot Pet Project — Wiring</title>
-<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -16,13 +16,14 @@
   </div>
   <div class="sidebar-nav">
     <div class="nav-section">Navigation</div>
-    <a href="/index.html" class="nav-link"><span class="nav-icon">⌂</span> Overview</a>
-    <a href="/phases.html" class="nav-link"><span class="nav-icon">◈</span> Phases</a>
-    <a href="/hardware.html" class="nav-link"><span class="nav-icon">⚙</span> Hardware</a>
-    <a href="/power.html" class="nav-link"><span class="nav-icon">⚡</span> Power System</a>
-    <a href="/wiring.html" class="nav-link active"><span class="nav-icon">⌁</span> Wiring</a>
-    <a href="/software.html" class="nav-link"><span class="nav-icon">◻</span> Software</a>
-    <a href="/decisions.html" class="nav-link"><span class="nav-icon">✦</span> Decision Log</a>
+    <a href="index.html" class="nav-link"><span class="nav-icon">⌂</span> Overview</a>
+    <a href="phases.html" class="nav-link"><span class="nav-icon">◈</span> Phases</a>
+    <a href="hardware.html" class="nav-link"><span class="nav-icon">⚙</span> Hardware</a>
+    <a href="power.html" class="nav-link"><span class="nav-icon">⚡</span> Power System</a>
+    <a href="wiring.html" class="nav-link active"><span class="nav-icon">⌁</span> Wiring</a>
+    <a href="software.html" class="nav-link"><span class="nav-icon">◻</span> Software</a>
+    <a href="decisions.html" class="nav-link"><span class="nav-icon">✦</span> Decision Log</a>
+    <a href="expert-review.html" class="nav-link"><span class="nav-icon">◉</span> Expert Review</a>
   </div>
   <div class="sidebar-footer">
     <div class="status-pill"><span class="status-dot"></span> Phase 1 — Active</div>
@@ -43,20 +44,86 @@
       <div class="info-box">
         <strong>Breadboard-first rule:</strong> Build and test the entire circuit on a breadboard with a 4×AA battery pack and a small spare DC motor. Only when the Python test script drives the motor correctly should you progress to connecting the vacuum's motors and Ryobi battery. This prevents expensive mistakes on the real chassis.
       </div>
+
+      <div class="warn-box">
+        <strong>Expert review — Critical safety requirement:</strong> The SR8855's OEM sensors (cliff, obstacle, bump, Hall encoders) were originally powered by the Samsung PCB which had 3.3V and 5V rails. Individual sensors may output 5V signals. Connecting a 5V signal to Pi 4 GPIO (3.3V max, NOT 5V tolerant) will destroy the GPIO bank instantly and silently. <strong>Verify every sensor's output voltage before connecting to the Pi.</strong> See the sensor verification table below.
+      </div>
       <div class="grid-2">
         <div class="card">
           <h3>Safety checklist</h3>
           <ul class="styled" style="margin-top:8px">
+            <li>Verify all OEM sensor voltages before connecting to Pi GPIO</li>
+            <li>470µF+ capacitor across MDD10A VMOT/GND before powering</li>
+            <li>Emergency stop button wired before any floor testing</li>
             <li>Measure battery voltage before connecting anything (4×AA = ~6V, Ryobi = 18–21V)</li>
             <li>Verify MDD10A polarity with multimeter — no reverse protection</li>
             <li>Pi powered OFF before wiring GPIO connections</li>
-            <li>Check GPIO voltage is 3.3V (not 5V) before connecting to MDD10A logic</li>
+            <li>Motor battery direct to MDD10A terminals — NOT through breadboard rails</li>
             <li>Double-check all connections against table below before powering on</li>
           </ul>
         </div>
         <div class="card">
           <h3>Test with LED first</h3>
           <p style="font-size:13px;margin-top:8px">Replace the motor and battery with a single LED (any colour) and 330Ω resistor between AO1 and GND. When the Python test script runs, the LED flickers with PWM. This confirms all connections are correct without motor/battery risk. Once working — swap in the real motor.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">SR8855 Sensor Voltage Verification — Do This First</div>
+
+      <div class="info-box">
+        <strong>Procedure for each sensor:</strong> Power the sensor from 3.3V (Pi pin 1). Trigger it (cover cliff sensor with hand, block obstacle sensor, press bump switch). Measure output pin with multimeter. If output exceeds 3.4V — add a voltage divider before connecting to Pi GPIO. Results must be documented in the table below before any GPIO connection is made.
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Sensor</th><th>PCB Label</th><th>Count</th><th>Expected</th><th>Action if 5V output</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Cliff sensors</strong></td><td>BOTTOM_L/R/C</td><td>4</td><td>Likely 3.3V</td><td>Voltage divider: 10kΩ + 20kΩ</td><td><span class="badge badge-gray">Verify</span></td></tr>
+            <tr><td><strong>Obstacle IR sensors</strong></td><td>OBS_1–OBS_7</td><td>7</td><td>Unknown — verify</td><td>Voltage divider required</td><td><span class="badge badge-gray">Verify</span></td></tr>
+            <tr><td><strong>Bump switches</strong></td><td>BUMPER_SW_L/R</td><td>2</td><td>Safe — mechanical switch to GND</td><td>No action — use Pi pull-up</td><td><span class="badge badge-green">Safe</span></td></tr>
+            <tr><td><strong>Hall encoders</strong></td><td>HALL_SENSOR</td><td>2</td><td>Unknown — verify carefully</td><td>Voltage divider required</td><td><span class="badge badge-gray">Verify</span></td></tr>
+            <tr><td><strong>Wheel lift sensors</strong></td><td>WHEEL_LIFT_L/R</td><td>2</td><td>Likely switch-based, safe</td><td>Use Pi pull-up, verify first</td><td><span class="badge badge-gray">Verify</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tip-box">
+        <strong>Voltage divider formula:</strong> To drop 5V signal to 3.3V-safe: use 10kΩ resistor from sensor output to Pi GPIO pin, and 20kΩ resistor from Pi GPIO pin to GND. The Pi GPIO input then reads approximately 3.3V when sensor outputs 5V. This is safe and costs about 2p in resistors.
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Critical Addition — VMOT Decoupling Capacitor</div>
+      <div class="warn-box">
+        <strong>This must be fitted before powering the motor circuit for the first time.</strong> Without it, motor back-EMF spikes can instantly destroy the MDD10A. Identified as the single most likely cause of first-build hardware failure in the expert review.
+      </div>
+      <div class="card">
+        <h3>Capacitor placement</h3>
+        <p style="font-size:13px;margin-top:8px;margin-bottom:10px">Place a <strong>470µF–1000µF electrolytic capacitor rated 35V+</strong> with its leads connected across the VMOT (+) and GND (−) rails on the breadboard, as physically close to the MDD10A as possible. The capacitor's negative lead (marked with stripe) connects to GND. The positive lead connects to VMOT.</p>
+        <div class="spec-grid">
+          <span class="spec-key">Value</span><span class="spec-val"><strong>470µF minimum</strong>, 1000µF preferred</span>
+          <span class="spec-key">Voltage rating</span><span class="spec-val"><strong>35V minimum</strong> (Ryobi peaks at 21V — need headroom)</span>
+          <span class="spec-key">Placement</span><span class="spec-val">As close to MDD10A VMOT/GND terminals as possible</span>
+          <span class="spec-key">Polarity</span><span class="spec-val">Stripe = negative (GND). Reversed = explodes. Check before powering.</span>
+          <span class="spec-key">Cost</span><span class="spec-val">~50p from AliExpress, any electronics supplier, or Maplin-era stock</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Emergency Stop Wiring</div>
+      <div class="card">
+        <h3>Physical E-Stop button</h3>
+        <p style="font-size:13px;margin-top:8px;margin-bottom:10px">Wire a normally-closed (NC) momentary pushbutton in series between the motor battery positive terminal and the MDD10A VMOT input. When pressed, it breaks the motor supply circuit instantly — regardless of software state. If the Pi crashes, freezes, or enters an uncontrolled state, pressing this button stops all motor movement immediately.</p>
+        <div class="spec-grid">
+          <span class="spec-key">Button type</span><span class="spec-val">Normally-Closed (NC) — circuit open when pressed</span>
+          <span class="spec-key">Position</span><span class="spec-val">In series with motor battery positive wire to MDD10A VMOT</span>
+          <span class="spec-key">Mounting</span><span class="spec-val">Accessible on chassis exterior — top or side, reachable in emergency</span>
+          <span class="spec-key">Rating</span><span class="spec-val">Must be rated for 21V DC and at least 15A (motor stall current)</span>
         </div>
       </div>
     </div>

@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Robot Pet Project — Overview</title>
-<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -16,13 +16,14 @@
   </div>
   <div class="sidebar-nav">
     <div class="nav-section">Navigation</div>
-    <a href="/index.html" class="nav-link active"><span class="nav-icon">⌂</span> Overview</a>
-    <a href="/phases.html" class="nav-link"><span class="nav-icon">◈</span> Phases</a>
-    <a href="/hardware.html" class="nav-link"><span class="nav-icon">⚙</span> Hardware</a>
-    <a href="/power.html" class="nav-link"><span class="nav-icon">⚡</span> Power System</a>
-    <a href="/wiring.html" class="nav-link"><span class="nav-icon">⌁</span> Wiring</a>
-    <a href="/software.html" class="nav-link"><span class="nav-icon">◻</span> Software</a>
-    <a href="/decisions.html" class="nav-link"><span class="nav-icon">✦</span> Decision Log</a>
+    <a href="index.html" class="nav-link active"><span class="nav-icon">⌂</span> Overview</a>
+    <a href="phases.html" class="nav-link"><span class="nav-icon">◈</span> Phases</a>
+    <a href="hardware.html" class="nav-link"><span class="nav-icon">⚙</span> Hardware</a>
+    <a href="power.html" class="nav-link"><span class="nav-icon">⚡</span> Power System</a>
+    <a href="wiring.html" class="nav-link"><span class="nav-icon">⌁</span> Wiring</a>
+    <a href="software.html" class="nav-link"><span class="nav-icon">◻</span> Software</a>
+    <a href="decisions.html" class="nav-link"><span class="nav-icon">✦</span> Decision Log</a>
+    <a href="expert-review.html" class="nav-link"><span class="nav-icon">◉</span> Expert Review</a>
   </div>
   <div class="sidebar-footer">
     <div class="status-pill"><span class="status-dot"></span> Phase 1 — Active</div>
@@ -186,9 +187,15 @@
             <li>Full project architecture designed</li>
             <li>Phase roadmap defined</li>
             <li>Motor driver selected (Cytron MDD10A)</li>
-            <li>Power architecture finalised (Ryobi ONE+)</li>
+            <li>Power architecture finalised (dual Ryobi ONE+ domains)</li>
+            <li>Separate electronics/motor power domains — noise isolation</li>
             <li>Bench wiring diagram created</li>
             <li>Phase 1 components ordered (AliExpress)</li>
+            <li>SR8855 fully disassembled and documented</li>
+            <li>All PCB connector labels identified and mapped</li>
+            <li>OEM speaker, Hall encoders, sweeper motors confirmed reusable</li>
+            <li>Independent expert engineering review completed</li>
+            <li>Documentation website created and updated</li>
           </ul>
         </div>
         <div class="card card-amber">
@@ -196,13 +203,30 @@
           <ul class="styled">
             <li>Order Cytron MDD10A (Amazon.co.uk)</li>
             <li>Order Ryobi ONE+ battery adapter (eBay UK)</li>
-            <li>AliExpress components arriving (3–6 weeks)</li>
-            <li>SR8855 teardown + component audit</li>
-            <li>Bench test with AA batteries + test motor</li>
-            <li>Identify ceiling camera connector type</li>
+            <li>Order 470µF 35V+ capacitor (VMOT decoupling — CRITICAL)</li>
+            <li>Order emergency stop button (NC pushbutton)</li>
+            <li>Order INA219 current sensors ×2</li>
+            <li>Order Pi 4 heatsink kit</li>
+            <li>AliExpress Phase 1 kit arriving (3–6 weeks)</li>
+            <li>Sensor voltage verification on SR8855 OEM sensors</li>
+            <li>Bench test: LED → test motor → drive motors</li>
           </ul>
         </div>
       </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Expert Review Summary</div>
+      <div class="warn-box">
+        <strong>4 critical findings from independent engineering review — must address before first power-on:</strong>
+        <ol style="margin-top:8px;padding-left:18px;display:flex;flex-direction:column;gap:5px;font-size:12px">
+          <li><strong>CR-01:</strong> Add 470µF+ 35V electrolytic capacitor across MDD10A VMOT/GND — prevents motor back-EMF destroying the driver</li>
+          <li><strong>CR-02:</strong> Verify all OEM sensor output voltages before connecting to Pi GPIO — 5V signals destroy the Pi GPIO bank instantly</li>
+          <li><strong>CR-03:</strong> Enable Pi hardware watchdog — without it a crash leaves motors running indefinitely</li>
+          <li><strong>CR-04:</strong> Motor battery connects direct to MDD10A — not through breadboard rails (1A limit, motors need 3–5A)</li>
+        </ol>
+      </div>
+      <p style="font-size:13px;color:var(--text2)">Full expert review with all critical, significant, and minor findings is documented on the <a href="expert-review.html" style="color:var(--amber)">Expert Review page</a>.</p>
     </div>
 
     <div class="section">

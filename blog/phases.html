@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Robot Pet Project — Phases</title>
-<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -16,13 +16,14 @@
   </div>
   <div class="sidebar-nav">
     <div class="nav-section">Navigation</div>
-    <a href="/index.html" class="nav-link"><span class="nav-icon">⌂</span> Overview</a>
-    <a href="/phases.html" class="nav-link active"><span class="nav-icon">◈</span> Phases</a>
-    <a href="/hardware.html" class="nav-link"><span class="nav-icon">⚙</span> Hardware</a>
-    <a href="/power.html" class="nav-link"><span class="nav-icon">⚡</span> Power System</a>
-    <a href="/wiring.html" class="nav-link"><span class="nav-icon">⌁</span> Wiring</a>
-    <a href="/software.html" class="nav-link"><span class="nav-icon">◻</span> Software</a>
-    <a href="/decisions.html" class="nav-link"><span class="nav-icon">✦</span> Decision Log</a>
+    <a href="index.html" class="nav-link"><span class="nav-icon">⌂</span> Overview</a>
+    <a href="phases.html" class="nav-link active"><span class="nav-icon">◈</span> Phases</a>
+    <a href="hardware.html" class="nav-link"><span class="nav-icon">⚙</span> Hardware</a>
+    <a href="power.html" class="nav-link"><span class="nav-icon">⚡</span> Power System</a>
+    <a href="wiring.html" class="nav-link"><span class="nav-icon">⌁</span> Wiring</a>
+    <a href="software.html" class="nav-link"><span class="nav-icon">◻</span> Software</a>
+    <a href="decisions.html" class="nav-link"><span class="nav-icon">✦</span> Decision Log</a>
+    <a href="expert-review.html" class="nav-link"><span class="nav-icon">◉</span> Expert Review</a>
   </div>
   <div class="sidebar-footer">
     <div class="status-pill"><span class="status-dot"></span> Phase 1 — Active</div>
@@ -87,17 +88,20 @@
       <div class="card" style="margin-top:0">
         <h3>Step-by-step checklist</h3>
         <ul class="styled" style="margin-top:10px">
-          <li><strong>Step 1:</strong> Set up Pi 4 with Raspberry Pi OS 64-bit Lite. Enable SSH.</li>
-          <li><strong>Step 2:</strong> Build bench circuit on breadboard — Cytron MDD10A + 4×AA batteries + test motor. No vacuum yet.</li>
-          <li><strong>Step 3:</strong> Run LED test (LED + 330Ω resistor instead of motor). Verify GPIO control works.</li>
-          <li><strong>Step 4:</strong> Run motor test script — forward, reverse, turn. Verify motor responds correctly.</li>
-          <li><strong>Step 5:</strong> Open SR8855 chassis (see teardown guide). Document all connectors and sensors.</li>
-          <li><strong>Step 6:</strong> Identify and probe cliff sensor and bump sensor outputs with multimeter.</li>
-          <li><strong>Step 7:</strong> Connect cliff sensors to Pi GPIO. Test with Python — verify HIGH/LOW readings.</li>
-          <li><strong>Step 8:</strong> Integrate Ryobi battery adapter. Verify buck converter outputs 5V before connecting Pi.</li>
-          <li><strong>Step 9:</strong> Connect drive motors to MDD10A. Test forward/reverse/turn on bench.</li>
-          <li><strong>Step 10:</strong> Mount Pi, MDD10A, and buck converter inside chassis. Route all wiring.</li>
-          <li><strong>Step 11:</strong> Run wandering script with robot on floor. Observe and tune behaviour.</li>
+          <li><strong>Step 1:</strong> Set up Pi 4 with Raspberry Pi OS 64-bit Lite. Enable SSH. Enable hardware watchdog. Install watchdog daemon, log2ram, pigpio.</li>
+          <li><strong>Step 2:</strong> Verify buck converter output with 10Ω dummy load. Must read 5.0V ±0.1V stable before connecting Pi.</li>
+          <li><strong>Step 3:</strong> Build bench circuit on breadboard. Wire 470µF+ capacitor across MDD10A VMOT/GND. Wire emergency stop button in series with motor battery positive. Motor battery connects direct to MDD10A terminals — NOT through breadboard rails.</li>
+          <li><strong>Step 4:</strong> Run LED test (LED + 330Ω instead of motor). Verify GPIO control works. Verify watchdog daemon is running.</li>
+          <li><strong>Step 5:</strong> Run motor test script with 4×AA and test motor — forward, reverse, turn. Verify motor responds correctly.</li>
+          <li><strong>Step 6:</strong> Open SR8855 chassis. Document all connectors, photograph sensor wiring.</li>
+          <li><strong>Step 7:</strong> Sensor voltage verification — test EVERY OEM sensor output with multimeter. Document results. Add voltage dividers where output exceeds 3.4V before touching Pi GPIO.</li>
+          <li><strong>Step 8:</strong> Connect cliff and bump sensors to Pi GPIO (voltage-verified). Test with Python.</li>
+          <li><strong>Step 9:</strong> Seal plywood plate. Mount to OEM boss points with Pi standoffs for airspace. Mount components on top.</li>
+          <li><strong>Step 10:</strong> Integrate Ryobi battery adapters. Confirm fuse ratings (15A motor, 3A electronics). Verify buck converter under load before connecting Pi.</li>
+          <li><strong>Step 11:</strong> Connect drive motors. Confirm capacitor in place. Test forward/reverse/turn.</li>
+          <li><strong>Step 12:</strong> Implement Hall encoder counting via pigpio callbacks. Verify pulse counts empirically.</li>
+          <li><strong>Step 13:</strong> Implement PID velocity control. Tune on actual hardware across floor surfaces.</li>
+          <li><strong>Step 14:</strong> Run wandering script on floor. Verify watchdog resets correctly if script is killed.</li>
         </ul>
       </div>
     </div>

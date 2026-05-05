@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Robot Pet Project — Hardware</title>
-<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -16,13 +16,14 @@
   </div>
   <div class="sidebar-nav">
     <div class="nav-section">Navigation</div>
-    <a href="/index.html" class="nav-link"><span class="nav-icon">⌂</span> Overview</a>
-    <a href="/phases.html" class="nav-link"><span class="nav-icon">◈</span> Phases</a>
-    <a href="/hardware.html" class="nav-link active"><span class="nav-icon">⚙</span> Hardware</a>
-    <a href="/power.html" class="nav-link"><span class="nav-icon">⚡</span> Power System</a>
-    <a href="/wiring.html" class="nav-link"><span class="nav-icon">⌁</span> Wiring</a>
-    <a href="/software.html" class="nav-link"><span class="nav-icon">◻</span> Software</a>
-    <a href="/decisions.html" class="nav-link"><span class="nav-icon">✦</span> Decision Log</a>
+    <a href="index.html" class="nav-link"><span class="nav-icon">⌂</span> Overview</a>
+    <a href="phases.html" class="nav-link"><span class="nav-icon">◈</span> Phases</a>
+    <a href="hardware.html" class="nav-link active"><span class="nav-icon">⚙</span> Hardware</a>
+    <a href="power.html" class="nav-link"><span class="nav-icon">⚡</span> Power System</a>
+    <a href="wiring.html" class="nav-link"><span class="nav-icon">⌁</span> Wiring</a>
+    <a href="software.html" class="nav-link"><span class="nav-icon">◻</span> Software</a>
+    <a href="decisions.html" class="nav-link"><span class="nav-icon">✦</span> Decision Log</a>
+    <a href="expert-review.html" class="nav-link"><span class="nav-icon">◉</span> Expert Review</a>
   </div>
   <div class="sidebar-footer">
     <div class="status-pill"><span class="status-dot"></span> Phase 1 — Active</div>
@@ -124,6 +125,62 @@
           </tbody>
         </table>
       </div>
+
+      <div class="warn-box">
+        <strong>Expert review additions — Phase 1:</strong> The following components were identified as missing from the original Phase 1 BOM after independent engineering review. Several are critical safety items that must be in place before first power-on.
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Component</th><th>Spec / Notes</th><th>Supplier</th><th>Price</th><th>Priority</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Electrolytic capacitor 470µF–1000µF 35V+</strong></td>
+              <td>VMOT decoupling capacitor. Placed directly across MDD10A VMOT and GND terminals. Absorbs motor back-EMF spikes that would otherwise destroy the driver. This is the single most important addition to the BOM. Observe polarity when fitting.</td>
+              <td>AliExpress / RS Components</td>
+              <td>~£0.50</td>
+              <td><span class="badge badge-amber">🔴 Critical</span></td>
+            </tr>
+            <tr>
+              <td><strong>Emergency stop button (NC pushbutton)</strong></td>
+              <td>Normally-closed pushbutton wired in series with motor battery supply. Instantly cuts motor power when pressed. Must be mounted accessibly on chassis exterior. Essential for development and family safety.</td>
+              <td>AliExpress / Amazon</td>
+              <td>~£2</td>
+              <td><span class="badge badge-amber">🔴 Critical</span></td>
+            </tr>
+            <tr>
+              <td><strong>INA219 current sensor modules (×2)</strong></td>
+              <td>I2C current sensing, one per motor supply line. Enables motor stall detection (current spike without velocity change), battery current monitoring, and runtime estimation. The MDD10A has no current sensing — these fill the gap.</td>
+              <td>AliExpress</td>
+              <td>~£3</td>
+              <td><span class="badge badge-cyan">Significant</span></td>
+            </tr>
+            <tr>
+              <td><strong>Pi 4 heatsink kit</strong></td>
+              <td>Heatsink set for Pi 4 SoC, RAM, and USB controller. Essential for Phase 2+ when running YOLOv8-nano continuously. Without cooling the Pi will thermal throttle, reducing vision frame rate significantly. Get the aluminium + copper kit, not just stickers.</td>
+              <td>Pimoroni / Amazon</td>
+              <td>~£4</td>
+              <td><span class="badge badge-cyan">Significant</span></td>
+            </tr>
+            <tr>
+              <td><strong>JST-PH connector kit (2mm pitch)</strong></td>
+              <td>For all signal connections (sensors → Pi). Keyed so can't be misinserted. Makes the build maintainable and sensor harnesses unpluggable during chassis work. Adopt from Phase 1 — retrofitting connectors later is painful.</td>
+              <td>AliExpress</td>
+              <td>~£5</td>
+              <td><span class="badge badge-cyan">Significant</span></td>
+            </tr>
+            <tr>
+              <td><strong>Voltage divider resistors (10kΩ + 20kΩ, pack)</strong></td>
+              <td>For 5V→3.3V signal level shifting on any OEM sensor found to output 5V. Required if sensor voltage verification (see Wiring page) reveals 5V outputs. Essential before connecting sensors to Pi GPIO — 5V signals destroy the GPIO bank.</td>
+              <td>AliExpress (included in breadboard kit)</td>
+              <td>~£0</td>
+              <td><span class="badge badge-amber">🔴 Critical</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <div class="section">
@@ -205,10 +262,17 @@
             </tr>
             <tr>
               <td><strong>SR8855 vacuum motor</strong></td>
-              <td>High-speed brushed DC motor. Repurposed for "sniff/sneeze" character effect — controlled burst = puff of air + distinctive sound.</td>
+              <td>High-speed brushed DC motor. Repurposed for "sniff/sneeze" character effect — controlled burst = puff of air + distinctive sound. Note: has thermal cutout fuse — do not run continuously.</td>
               <td>Reused</td>
               <td>£0</td>
               <td><span class="badge badge-gray">Reused</span></td>
+            </tr>
+            <tr>
+              <td><strong>74AHCT125 level shifter</strong></td>
+              <td>Required for WS2812B NeoPixel data line. Pi 4 GPIO = 3.3V; NeoPixels require 5V data signal (logic HIGH ≥ 3.5V). Without this, NeoPixels are unreliable — intermittent flicker, colour glitches. A £1 fix for a £6 problem. Do not skip.</td>
+              <td>AliExpress</td>
+              <td>~£1</td>
+              <td><span class="badge badge-amber">🔴 Required</span></td>
             </tr>
           </tbody>
         </table>
