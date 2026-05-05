@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Robot Pet Project — Software</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🤖</div>
+    <div class="logo-title">Robot Pet<br>Project</div>
+    <div class="logo-sub">SR8855 → AI Companion</div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section">Navigation</div>
+    <a href="index.html" class="nav-link"><span class="nav-icon">⌂</span> Overview</a>
+    <a href="phases.html" class="nav-link"><span class="nav-icon">◈</span> Phases</a>
+    <a href="hardware.html" class="nav-link"><span class="nav-icon">⚙</span> Hardware</a>
+    <a href="power.html" class="nav-link"><span class="nav-icon">⚡</span> Power System</a>
+    <a href="wiring.html" class="nav-link"><span class="nav-icon">⌁</span> Wiring</a>
+    <a href="software.html" class="nav-link active"><span class="nav-icon">◻</span> Software</a>
+    <a href="decisions.html" class="nav-link"><span class="nav-icon">✦</span> Decision Log</a>
+  </div>
+  <div class="sidebar-footer">
+    <div class="status-pill"><span class="status-dot"></span> Phase 1 — Active</div>
+  </div>
+</nav>
+
+<main class="main">
+  <div class="page-header">
+    <div class="page-eyebrow">Software Architecture</div>
+    <h1 class="page-title">Software <span>Stack</span></h1>
+    <p class="page-desc">All code runs on Raspberry Pi OS in Python. The LLM runs on a home PC via Ollama and is called over WiFi — the Pi 4 is too slow to run a useful language model locally.</p>
+  </div>
+
+  <div class="content">
+
+    <div class="section">
+      <div class="section-title">Pi Setup</div>
+      <div class="card">
+        <h3>Base OS configuration</h3>
+        <pre>
+# Flash Raspberry Pi OS (64-bit Lite) using Raspberry Pi Imager
+# Enable SSH and set hostname during Imager setup
+
+# First boot — update everything
+sudo apt update && sudo apt upgrade -y
+
+# Install Python dependencies
+sudo apt install -y python3-pip python3-venv git
+
+# Create project virtual environment
+python3 -m venv ~/robot-env
+source ~/robot-env/bin/activate
+
+# Install core libraries (Phase 1)
+pip install RPi.GPIO gpiozero pigpio
+
+# Enable pigpio daemon (needed for hardware PWM)
+sudo systemctl enable pigpiod
+sudo systemctl start pigpiod</pre>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Phase 1 — Motor Control</div>
+      <div class="card card-amber">
+        <h3>Core libraries</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0">
+          <span class="tag">RPi.GPIO</span>
+          <span class="tag">pigpio</span>
+          <span class="tag">gpiozero</span>
+          <span class="tag">time</span>
+          <span class="tag">random</span>
+        </div>
+        <p style="font-size:13px"><code>pigpio</code> is used for hardware PWM (rather than RPi.GPIO software PWM) — it produces smooth, consistent motor speed signals. The pigpio daemon must be running before the script starts.</p>
+      </div>
+
+      <div class="card" style="margin-top:0">
+        <h3>Motor control test script</h3>
+        <pre>
+import pigpio
+import RPi.GPIO as GPIO
+import time
+import random
+
+# GPIO setup (BCM numbering)
+PWM1 = 18   # Motor A speed (hardware PWM)
+DIR1 = 17   # Motor A direction
+PWM2 = 13   # Motor B speed (hardware PWM)
+DIR2 = 27   # Motor B direction
+
+# Cliff sensors
+CLIFF_FL = 22
+CLIFF_FC = 23
+CLIFF_FR = 24
+
+# Bump sensors
+BUMP_L = 5
+BUMP_R = 6
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup([DIR1, DIR2], GPIO.OUT)
+GPIO.setup([CLIFF_FL, CLIFF_FC, CLIFF_FR], GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup([BUMP_L, BUMP_R], GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+pi = pigpio.pi()
+
+def set_motor(pwm_pin, dir_pin, speed, forward=True):
+    """Set motor speed (0-255) and direction."""
+    GPIO.output(dir_pin, GPIO.HIGH if forward else GPIO.LOW)
+    pi.set_PWM_dutycycle(pwm_pin, speed)
+
+def stop():
+    pi.set_PWM_dutycycle(PWM1, 0)
+    pi.set_PWM_dutycycle(PWM2, 0)
+
+def forward(speed=180):
+    set_motor(PWM1, DIR1, speed, True)
+    set_motor(PWM2, DIR2, speed, True)
+
+def reverse(speed=150):
+    set_motor(PWM1, DIR1, speed, False)
+    set_motor(PWM2, DIR2, speed, False)
+
+def turn_left(speed=150):
+    set_motor(PWM1, DIR1, 0, True)
+    set_motor(PWM2, DIR2, speed, True)
+
+def turn_right(speed=150):
+    set_motor(PWM1, DIR1, speed, True)
+    set_motor(PWM2, DIR2, 0, True)
+
+def cliff_detected():
+    return (not GPIO.input(CLIFF_FL) or
+            not GPIO.input(CLIFF_FC) or
+            not GPIO.input(CLIFF_FR))
+
+def bump_detected():
+    return not GPIO.input(BUMP_L) or not GPIO.input(BUMP_R)
+
+# Test sequence
+try:
+    print("Forward 2s...")
+    forward()
+    time.sleep(2)
+    print("Turn right 1s...")
+    turn_right()
+    time.sleep(1)
+    print("Reverse 1s...")
+    reverse()
+    time.sleep(1)
+    stop()
+    print("Done. Motors responding correctly.")
+finally:
+    stop()
+    pi.stop()
+    GPIO.cleanup()</pre>
+      </div>
+
+      <div class="card" style="margin-top:0">
+        <h3>Wandering behaviour</h3>
+        <pre>
+def wander():
+    """Basic autonomous wandering with cliff + bump avoidance."""
+    try:
+        while True:
+            if cliff_detected():
+                # Edge detected — back up and turn
+                reverse()
+                time.sleep(0.8)
+                if random.random() > 0.5:
+                    turn_left()
+                else:
+                    turn_right()
+                time.sleep(random.uniform(0.5, 1.2))
+
+            elif bump_detected():
+                # Collision — back up and turn away
+                reverse()
+                time.sleep(0.5)
+                # Turn away from hit side
+                if not GPIO.input(BUMP_L):
+                    turn_right()
+                else:
+                    turn_left()
+                time.sleep(random.uniform(0.4, 0.9))
+
+            else:
+                # All clear — wander forward
+                forward(speed=random.randint(160, 200))
+                time.sleep(random.uniform(0.5, 3.0))
+
+                # Occasional random direction change
+                if random.random() < 0.15:
+                    if random.random() > 0.5:
+                        turn_left()
+                    else:
+                        turn_right()
+                    time.sleep(random.uniform(0.3, 0.8))
+
+    except KeyboardInterrupt:
+        stop()
+        pi.stop()
+        GPIO.cleanup()</pre>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Phase 2 — Vision &amp; Navigation</div>
+      <div class="card card-cyan">
+        <h3>Libraries to add</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0">
+          <span class="tag">opencv-python</span>
+          <span class="tag">ultralytics (YOLOv8)</span>
+          <span class="tag">picamera2</span>
+          <span class="tag">numpy</span>
+        </div>
+        <pre style="margin-top:12px">
+pip install opencv-python ultralytics picamera2 numpy
+
+# YOLOv8-nano — runs at ~5-8fps on Pi 4, sufficient for navigation decisions
+from ultralytics import YOLO
+model = YOLO('yolov8n.pt')  # Downloads on first run (~6MB)</pre>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Ceiling camera (VSLAM)</h3>
+          <p style="font-size:13px;margin-top:8px">The SR8855's ceiling camera is used for visual odometry and room mapping. Software stack depends on connector type discovered during teardown. If compatible with Pi CSI — use <code>picamera2</code> directly. VSLAM library: <strong>ORB-SLAM3</strong> (heavy) or <strong>visual odometry</strong> (lighter, sufficient for room recognition).</p>
+        </div>
+        <div class="card">
+          <h3>YOLOv8-nano detection</h3>
+          <p style="font-size:13px;margin-top:8px">Runs on Pi 4 at ~5–8fps — sufficient for navigation decisions. Detects: persons, pets, furniture. Person detection triggers slower movement and character reactions. Object classes inform mood state (sees cat → cautious, sees child → excited).</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Phase 3 — Character &amp; Mood State Machine</div>
+      <div class="card card-amber">
+        <h3>Mood system architecture</h3>
+        <p style="font-size:13px;margin-top:8px;margin-bottom:14px">A state machine with 5 primary moods. Each mood determines: LED colour/pattern, movement speed, sound type, and physical appendage position. Mood transitions are probabilistic — the robot won't snap instantly between states.</p>
+        <pre>
+MOODS = {
+    'curious':  {'led': 'amber_pulse',  'speed': 0.7, 'sound': 'chirp',    'ears': 'up'},
+    'excited':  {'led': 'green_spin',   'speed': 1.0, 'sound': 'rapid',    'ears': 'wiggle'},
+    'sleepy':   {'led': 'blue_dim',     'speed': 0.3, 'sound': 'yawn',     'ears': 'down'},
+    'startled': {'led': 'red_flash',    'speed': 0.0, 'sound': 'yelp',     'ears': 'back'},
+    'content':  {'led': 'white_steady', 'speed': 0.5, 'sound': 'hum',      'ears': 'neutral'},
+}
+
+# Mood transition triggers
+TRIGGERS = {
+    'person_detected':  lambda mood: 'excited',
+    'cliff_detected':   lambda mood: 'startled',
+    'bump':             lambda mood: 'startled',
+    'dark_surface':     lambda mood: 'cautious',
+    'idle_too_long':    lambda mood: 'sleepy',
+    'battery_low':      lambda mood: 'sleepy',
+    'family_recognised':lambda mood: 'excited',
+    'stranger':         lambda mood: 'curious',
+}</pre>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Phase 4 — AI Brain</div>
+      <div class="card card-green">
+        <h3>Architecture: Pi as ears + mouth, PC as brain</h3>
+        <p style="font-size:13px;margin-top:8px;margin-bottom:14px">The Pi 4 is too slow to run a useful LLM. A home PC runs Ollama with a small model (Phi-3 Mini or Llama 3.2 3B). The Pi handles audio I/O and sends text prompts to the PC over WiFi, receives text responses, and speaks them with Piper TTS.</p>
+        <pre>
+# On home PC — install Ollama and pull model
+# ollama pull phi3:mini
+# ollama serve  (starts API on port 11434)
+
+# On Pi — call Ollama over WiFi
+import requests
+
+OLLAMA_URL = "http://192.168.1.X:11434/api/generate"
+SYSTEM_PROMPT = """
+You are [robot name], a curious and affectionate robot pet.
+You live with the Taylor family. You know:
+- Simon (dad, likes tech and cars)
+- [children names]
+You speak in short, enthusiastic sentences. You're nerdy but warm.
+You have a memory of past interactions stored in memory.json.
+"""
+
+def ask_brain(user_input):
+    response = requests.post(OLLAMA_URL, json={
+        "model": "phi3:mini",
+        "prompt": user_input,
+        "system": SYSTEM_PROMPT,
+        "stream": False
+    })
+    return response.json()['response']</pre>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Speech to text — Faster-Whisper</h3>
+          <pre style="font-size:11px">
+pip install faster-whisper
+
+from faster_whisper import WhisperModel
+model = WhisperModel("tiny", device="cpu")
+
+# Runs on Pi 4 in real-time
+# "tiny" model — fast enough
+segments, _ = model.transcribe("audio.wav")
+text = " ".join([s.text for s in segments])</pre>
+        </div>
+        <div class="card">
+          <h3>Text to speech — Piper TTS</h3>
+          <pre style="font-size:11px">
+# Install Piper TTS (runs on Pi 4)
+# github.com/rhasspy/piper
+
+# Select a robot-appropriate voice
+# en_US-lessac-medium works well
+# Or use a custom voice trained
+# on synthetic robot speech samples
+
+echo "Hello family!" | \
+  piper --model en_US-lessac-medium \
+  --output_raw | aplay -r 22050 -f S16_LE -c 1</pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Persistent memory</h3>
+        <pre>
+import json, os
+
+MEMORY_FILE = "/home/pi/robot-pet/memory.json"
+
+def load_memory():
+    if os.path.exists(MEMORY_FILE):
+        with open(MEMORY_FILE) as f:
+            return json.load(f)
+    return {"family": {}, "events": [], "preferences": {}}
+
+def save_memory(memory):
+    with open(MEMORY_FILE, 'w') as f:
+        json.dump(memory, f, indent=2)
+
+# Memory structure
+memory = {
+    "family": {
+        "Simon": {"interests": ["tech", "cars", "DayZ"], "voice_id": None},
+        # Add family members after face recognition setup
+    },
+    "events": [
+        # Recent interactions, discoveries, funny moments
+    ],
+    "preferences": {
+        "favourite_room": "living_room",
+        "least_favourite": "kitchen",
+        "scared_of": ["hoover", "loud_noises"]
+    }
+}</pre>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Project File Structure</div>
+      <pre>
+~/robot-pet/
+├── main.py              # Entry point — starts wandering behaviour
+├── motors.py            # MDD10A motor control functions
+├── sensors.py           # Cliff, bump, obstacle sensor reading
+├── mood.py              # Mood state machine
+├── vision.py            # Camera + YOLOv8 detection (Phase 2)
+├── expression.py        # LEDs, sound, physical movement (Phase 3)
+├── brain.py             # Ollama API calls + STT/TTS (Phase 4)
+├── memory.json          # Persistent memory store
+├── config.py            # GPIO pin assignments, tunable parameters
+├── logs/
+│   └── robot.log        # Rotating log file
+└── sounds/
+    └── *.wav            # Sound effect library</pre>
+    </div>
+
+  </div>
+</main>
+
+</body>
+</html>

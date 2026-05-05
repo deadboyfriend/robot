@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Robot Pet Project — Hardware</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🤖</div>
+    <div class="logo-title">Robot Pet<br>Project</div>
+    <div class="logo-sub">SR8855 → AI Companion</div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section">Navigation</div>
+    <a href="index.html" class="nav-link"><span class="nav-icon">⌂</span> Overview</a>
+    <a href="phases.html" class="nav-link"><span class="nav-icon">◈</span> Phases</a>
+    <a href="hardware.html" class="nav-link active"><span class="nav-icon">⚙</span> Hardware</a>
+    <a href="power.html" class="nav-link"><span class="nav-icon">⚡</span> Power System</a>
+    <a href="wiring.html" class="nav-link"><span class="nav-icon">⌁</span> Wiring</a>
+    <a href="software.html" class="nav-link"><span class="nav-icon">◻</span> Software</a>
+    <a href="decisions.html" class="nav-link"><span class="nav-icon">✦</span> Decision Log</a>
+  </div>
+  <div class="sidebar-footer">
+    <div class="status-pill"><span class="status-dot"></span> Phase 1 — Active</div>
+  </div>
+</nav>
+
+<main class="main">
+  <div class="page-header">
+    <div class="page-eyebrow">Bill of Materials</div>
+    <h1 class="page-title">Hardware &amp; <span>Components</span></h1>
+    <p class="page-desc">Complete component list across all phases. Ordered items tracked with current status.</p>
+  </div>
+
+  <div class="content">
+
+    <div class="section">
+      <div class="section-title">Phase 1 — Bench Kit (Ordered / To Order)</div>
+
+      <div class="info-box">
+        <strong>Approach:</strong> Breadboard-first. Test all circuits on a bench with AA batteries and a spare DC motor before opening the vacuum. This validates the wiring before adding chassis complexity.
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Component</th><th>Spec / Notes</th><th>Supplier</th><th>Price</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Cytron MDD10A</strong></td>
+              <td>Dual motor driver, 5–30V, 10A continuous, 30A peak. Chosen specifically for Ryobi 18V compatibility (peaks at 21V). Replaces originally planned TB6612FNG for main drive motors.</td>
+              <td>Amazon.co.uk</td>
+              <td>~£24</td>
+              <td><span class="badge badge-amber">To order</span></td>
+            </tr>
+            <tr>
+              <td><strong>Ryobi ONE+ battery adapter</strong></td>
+              <td>DIY breakout with fuse + switch. Exposes V+, V− and ideally thermistor pin. Must include 30A fuse for protection. Search: "Ryobi 18V battery adapter DIY fuse"</td>
+              <td>eBay UK</td>
+              <td>~£7</td>
+              <td><span class="badge badge-amber">To order</span></td>
+            </tr>
+            <tr>
+              <td><strong>TB6612FNG breakout (×2)</strong></td>
+              <td>With pre-soldered headers. Used for Phase 3 sweeper/vacuum motors (lower current), not Phase 1 drive motors. Ordered with headers for breadboard use.</td>
+              <td>AliExpress</td>
+              <td>~£1.30</td>
+              <td><span class="badge badge-green">Ordered</span></td>
+            </tr>
+            <tr>
+              <td><strong>830pt breadboard kit</strong></td>
+              <td>Bundle including: 830-point breadboard, GPIO T-cobbler, 40-pin ribbon cable, 65× jumper wires, 300× resistors. Huge value vs buying separately.</td>
+              <td>AliExpress</td>
+              <td>~£2.30</td>
+              <td><span class="badge badge-green">Ordered</span></td>
+            </tr>
+            <tr>
+              <td><strong>Screw terminal blocks</strong></td>
+              <td>2-pin, 2.54mm pitch, pack of 10. For connecting bare motor wires to breadboard without soldering.</td>
+              <td>AliExpress</td>
+              <td>~£0.80</td>
+              <td><span class="badge badge-green">Ordered</span></td>
+            </tr>
+            <tr>
+              <td><strong>Solid core wire spool set</strong></td>
+              <td>Multicolour solid core wire for neat breadboard hops. Essential for clean, readable wiring.</td>
+              <td>AliExpress</td>
+              <td>~£2.50</td>
+              <td><span class="badge badge-green">Ordered</span></td>
+            </tr>
+            <tr>
+              <td><strong>Buck converter 18V→5V</strong></td>
+              <td>DC-DC step-down for Pi power from Ryobi battery. Must accept up to 21V input (order "24V to 5V" variant, not "12V to 5V"). Powers Pi via USB-C.</td>
+              <td>AliExpress</td>
+              <td>~£1.50</td>
+              <td><span class="badge badge-green">Ordered</span></td>
+            </tr>
+            <tr>
+              <td><strong>Wire stripper/cutter</strong></td>
+              <td>Small manual wire stripper for preparing vacuum internal wires.</td>
+              <td>AliExpress</td>
+              <td>~£2.90</td>
+              <td><span class="badge badge-green">Ordered</span></td>
+            </tr>
+            <tr>
+              <td><strong>Digital multimeter</strong></td>
+              <td>AstroAI AM33D or equivalent. Essential for verifying voltages, checking motor polarity, diagnosing issues. Do not skip this.</td>
+              <td>Amazon.co.uk</td>
+              <td>~£13</td>
+              <td><span class="badge badge-green">Ordered</span></td>
+            </tr>
+            <tr>
+              <td><strong>4×AA battery holder</strong></td>
+              <td>~6V test supply for motor during bench testing. Use instead of Ryobi battery until circuit is verified.</td>
+              <td>Any / already owned</td>
+              <td>~£2</td>
+              <td><span class="badge badge-gray">Get locally</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Phase 2 — Eyes &amp; Awareness</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Component</th><th>Spec / Notes</th><th>Supplier</th><th>Est. Price</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Pi Camera Module 3</strong></td>
+              <td>Forward-facing vision camera. 12MP, autofocus. Connects to Pi CSI port. Used for YOLOv8 object/person detection.</td>
+              <td>Pimoroni / Pi Hut</td>
+              <td>~£25</td>
+              <td><span class="badge badge-gray">Future</span></td>
+            </tr>
+            <tr>
+              <td><strong>SR8855 ceiling camera</strong></td>
+              <td>OEM camera already in chassis. Ceiling-facing, used for VSLAM navigation. Connector type TBD — check during teardown. May need CSI adapter cable.</td>
+              <td>Reused</td>
+              <td>£0</td>
+              <td><span class="badge badge-gray">Assess on teardown</span></td>
+            </tr>
+            <tr>
+              <td><strong>HC-SR04 ultrasonic sensors (×3)</strong></td>
+              <td>Front left, centre, right distance sensing. May not be needed if SR8855 OEM obstacle IR sensors are reusable — assess during teardown before ordering.</td>
+              <td>AliExpress</td>
+              <td>~£3</td>
+              <td><span class="badge badge-gray">May not need</span></td>
+            </tr>
+            <tr>
+              <td><strong>IR receiver module (×2)</strong></td>
+              <td>For detecting SR8855 dock homing IR signal. Allows robot to navigate back to dock autonomously.</td>
+              <td>AliExpress</td>
+              <td>~£1</td>
+              <td><span class="badge badge-gray">Future</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Phase 3 — Character &amp; Expression</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Component</th><th>Spec / Notes</th><th>Supplier</th><th>Est. Price</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>NeoPixel LED ring (24px)</strong></td>
+              <td>WS2812B addressable LEDs. Forms the animated "eye" with mood colours. 3.3V data line (Pi GPIO direct). 5V power.</td>
+              <td>Pimoroni / AliExpress</td>
+              <td>~£6</td>
+              <td><span class="badge badge-gray">Future</span></td>
+            </tr>
+            <tr>
+              <td><strong>MAX98357A I2S amp</strong></td>
+              <td>Digital audio amp, 3W output. Connects to Pi I2S pins. Cheap, clean audio with no USB audio dongle needed.</td>
+              <td>AliExpress / Pimoroni</td>
+              <td>~£4</td>
+              <td><span class="badge badge-gray">Future</span></td>
+            </tr>
+            <tr>
+              <td><strong>3W speaker</strong></td>
+              <td>Small 8Ω 3W speaker for vocalisations and sound effects. Size depends on available chassis space.</td>
+              <td>AliExpress</td>
+              <td>~£2</td>
+              <td><span class="badge badge-gray">Future</span></td>
+            </tr>
+            <tr>
+              <td><strong>SR8855 sweeper motors (×2)</strong></td>
+              <td>OEM gear motors already in chassis. Low-speed, gear-reduced. Repurposed as animated ear/appendage actuators for physical expression. Driven by TB6612FNG (already ordered).</td>
+              <td>Reused</td>
+              <td>£0</td>
+              <td><span class="badge badge-gray">Reused</span></td>
+            </tr>
+            <tr>
+              <td><strong>SR8855 vacuum motor</strong></td>
+              <td>High-speed brushed DC motor. Repurposed for "sniff/sneeze" character effect — controlled burst = puff of air + distinctive sound.</td>
+              <td>Reused</td>
+              <td>£0</td>
+              <td><span class="badge badge-gray">Reused</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Phase 4 — The Brain</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Component</th><th>Spec / Notes</th><th>Supplier</th><th>Est. Price</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>USB microphone</strong></td>
+              <td>Small USB cardioid mic for speech recognition. Any compact USB mic works — look for plug-and-play USB Audio Class compliance.</td>
+              <td>Amazon</td>
+              <td>~£12</td>
+              <td><span class="badge badge-gray">Future</span></td>
+            </tr>
+            <tr>
+              <td><strong>Ollama (software)</strong></td>
+              <td>Runs LLM on home PC. Free software. Robot calls it over WiFi. Pi 4 is too slow to run the LLM itself. Recommended models: Phi-3 Mini (3.8B) or Llama 3.2 3B.</td>
+              <td>ollama.com (free)</td>
+              <td>£0</td>
+              <td><span class="badge badge-gray">Future</span></td>
+            </tr>
+            <tr>
+              <td><strong>Ryobi compact charger</strong></td>
+              <td>PCG001 or RC18120. Disassembled and fitted inside SR8855 dock housing for autonomous Ryobi battery charging. Second-hand fine.</td>
+              <td>eBay UK</td>
+              <td>~£15</td>
+              <td><span class="badge badge-gray">Future</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Total Cost Estimate</div>
+      <div class="grid-3">
+        <div class="card card-amber">
+          <div style="font-family:var(--font-mono);font-size:28px;color:var(--amber);margin-bottom:6px">~£55</div>
+          <div style="font-size:13px;color:var(--text2)">Phase 1 bench kit<br>(most already ordered)</div>
+        </div>
+        <div class="card card-cyan">
+          <div style="font-family:var(--font-mono);font-size:28px;color:var(--cyan);margin-bottom:6px">~£30</div>
+          <div style="font-size:13px;color:var(--text2)">Phase 2 additions<br>(cameras, sensors)</div>
+        </div>
+        <div class="card">
+          <div style="font-family:var(--font-mono);font-size:28px;color:var(--purple);margin-bottom:6px">~£40</div>
+          <div style="font-size:13px;color:var(--text2)">Phases 3 &amp; 4<br>(expression + AI)</div>
+        </div>
+      </div>
+      <div class="tip-box" style="margin-top:4px">
+        <strong>Cost excludes:</strong> The Raspberry Pi 4 (already owned), Ryobi batteries (already owned), and the SR8855 chassis. The SR8855 is the most expensive "component" and it's being repurposed rather than purchased. Total new-parts spend across all phases is approximately £125–145.
+      </div>
+    </div>
+
+  </div>
+</main>
+
+</body>
+</html>

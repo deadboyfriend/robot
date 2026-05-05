@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Robot Pet Project — Overview</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🤖</div>
+    <div class="logo-title">Robot Pet<br>Project</div>
+    <div class="logo-sub">SR8855 → AI Companion</div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section">Navigation</div>
+    <a href="index.html" class="nav-link active"><span class="nav-icon">⌂</span> Overview</a>
+    <a href="phases.html" class="nav-link"><span class="nav-icon">◈</span> Phases</a>
+    <a href="hardware.html" class="nav-link"><span class="nav-icon">⚙</span> Hardware</a>
+    <a href="power.html" class="nav-link"><span class="nav-icon">⚡</span> Power System</a>
+    <a href="wiring.html" class="nav-link"><span class="nav-icon">⌁</span> Wiring</a>
+    <a href="software.html" class="nav-link"><span class="nav-icon">◻</span> Software</a>
+    <a href="decisions.html" class="nav-link"><span class="nav-icon">✦</span> Decision Log</a>
+  </div>
+  <div class="sidebar-footer">
+    <div class="status-pill"><span class="status-dot"></span> Phase 1 — Active</div>
+  </div>
+</nav>
+
+<main class="main">
+  <div class="page-header">
+    <div class="page-eyebrow">Project Documentation · v1.0</div>
+    <h1 class="page-title">The <span>Robot Pet</span> Project</h1>
+    <p class="page-desc">Converting a Samsung SR8855 robot vacuum into an autonomous AI-powered family robot pet — with character, personality, and the ability to grow over time.</p>
+  </div>
+
+  <div class="content">
+
+    <div class="section">
+      <div class="section-title">The Concept</div>
+      <div class="card card-amber">
+        <h3>What are we building?</h3>
+        <p>A robot pet built from a repurposed Samsung SR8855 robot vacuum chassis, powered by a Raspberry Pi 4 (8GB) and a suite of AI models running locally. The robot will start as a simple autonomous wanderer and progressively develop a distinct character — reacting to its environment, expressing moods, recognising family members, and eventually holding conversations.</p>
+        <p>Power comes from Ryobi ONE+ 18V tool batteries — hot-swappable, long-lasting, and already owned. The dock is modified to autonomously recharge the robot using a disassembled Ryobi charger fitted inside the original SR8855 docking station housing.</p>
+        <div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="badge badge-amber">Family robot pet</span>
+          <span class="badge badge-cyan">4-phase build</span>
+          <span class="badge badge-green">Pi 4 8GB</span>
+          <span class="badge badge-purple">Local AI</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Core Platform</div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="spec-grid">
+            <span class="spec-key">Chassis</span><span class="spec-val"><strong>Samsung SR8855</strong> (repurposed)</span>
+            <span class="spec-key">Brain</span><span class="spec-val"><strong>Raspberry Pi 4</strong> 8GB</span>
+            <span class="spec-key">Motor driver</span><span class="spec-val"><strong>Cytron MDD10A</strong> (5–30V, 10A)</span>
+            <span class="spec-key">Secondary driver</span><span class="spec-val"><strong>TB6612FNG</strong> (Phase 3)</span>
+            <span class="spec-key">Power</span><span class="spec-val"><strong>Ryobi ONE+</strong> 18V Li-ion</span>
+            <span class="spec-key">Pi power</span><span class="spec-val">Buck converter 18V→5V</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="spec-grid">
+            <span class="spec-key">Nav camera</span><span class="spec-val"><strong>SR8855 OEM</strong> (ceiling, reused)</span>
+            <span class="spec-key">Vision camera</span><span class="spec-val"><strong>Pi Camera Module 3</strong> (Phase 2)</span>
+            <span class="spec-key">Cliff sensors</span><span class="spec-val">SR8855 OEM IR (reused)</span>
+            <span class="spec-key">Bump sensors</span><span class="spec-val">SR8855 OEM (directional)</span>
+            <span class="spec-key">Obstacle</span><span class="spec-val">SR8855 OEM IR (reused)</span>
+            <span class="spec-key">Charging</span><span class="spec-val">Modified SR8855 dock + Ryobi charger PCB</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Phase Roadmap</div>
+
+      <div class="phase-card phase-1">
+        <div class="phase-header" style="background:var(--surface2)">
+          <div class="phase-num">01</div>
+          <div class="phase-meta">
+            <div class="phase-name">Moving Chassis</div>
+            <div class="phase-tagline">Make it wander safely around the house</div>
+          </div>
+          <span class="badge badge-amber">In Progress</span>
+        </div>
+        <div class="phase-body">
+          <div class="progress-wrap">
+            <div class="progress-label"><span>Progress</span><span>25%</span></div>
+            <div class="progress-bar"><div class="progress-fill p1-fill" style="width:25%"></div></div>
+          </div>
+          <p style="font-size:13px;margin-top:10px;margin-bottom:0">Replace Samsung PCB with Pi + Cytron MDD10A. Wire existing cliff/bump sensors. Implement autonomous wandering with obstacle avoidance. Bench-test on breadboard first, then integrate with chassis.</p>
+        </div>
+      </div>
+
+      <div class="phase-card phase-2">
+        <div class="phase-header" style="background:var(--surface2)">
+          <div class="phase-num">02</div>
+          <div class="phase-meta">
+            <div class="phase-name">Eyes &amp; Awareness</div>
+            <div class="phase-tagline">Give it a sense of the space around it</div>
+          </div>
+          <span class="badge badge-gray">Planned</span>
+        </div>
+        <div class="phase-body">
+          <div class="progress-wrap">
+            <div class="progress-label"><span>Progress</span><span>0%</span></div>
+            <div class="progress-bar"><div class="progress-fill p2-fill" style="width:0%"></div></div>
+          </div>
+          <p style="font-size:13px;margin-top:10px;margin-bottom:0">Activate ceiling camera for VSLAM room navigation. Add Pi Camera Module 3 for forward vision. Run YOLOv8-nano for person/object detection. Implement IR dock homing. Smarter navigation — slows near obstacles, pauses for people.</p>
+        </div>
+      </div>
+
+      <div class="phase-card phase-3">
+        <div class="phase-header" style="background:var(--surface2)">
+          <div class="phase-num">03</div>
+          <div class="phase-meta">
+            <div class="phase-name">Character &amp; Expression</div>
+            <div class="phase-tagline">Give it feelings the family can read</div>
+          </div>
+          <span class="badge badge-gray">Planned</span>
+        </div>
+        <div class="phase-body">
+          <div class="progress-wrap">
+            <div class="progress-label"><span>Progress</span><span>0%</span></div>
+            <div class="progress-bar"><div class="progress-fill p3-fill" style="width:0%"></div></div>
+          </div>
+          <p style="font-size:13px;margin-top:10px;margin-bottom:0">NeoPixel LED ring for animated eye expressions. Speaker + MAX98357A amp for vocalisations. Sweeper motors repurposed as animated ears/appendages. Mood state machine: curious, sleepy, excited, startled. Reactions tied to vision — different responses per person detected.</p>
+        </div>
+      </div>
+
+      <div class="phase-card phase-4">
+        <div class="phase-header" style="background:var(--surface2)">
+          <div class="phase-num">04</div>
+          <div class="phase-meta">
+            <div class="phase-name">The Brain</div>
+            <div class="phase-tagline">Let it think, remember, and talk back</div>
+          </div>
+          <span class="badge badge-gray">Planned</span>
+        </div>
+        <div class="phase-body">
+          <div class="progress-wrap">
+            <div class="progress-label"><span>Progress</span><span>0%</span></div>
+            <div class="progress-bar"><div class="progress-fill p4-fill" style="width:0%"></div></div>
+          </div>
+          <p style="font-size:13px;margin-top:10px;margin-bottom:0">USB microphone + Faster-Whisper STT on Pi. Ollama running LLM (Phi-3 Mini or Llama 3.2 3B) on home PC, called over WiFi. Piper TTS for synthesised robot voice. Persistent memory file — knows family names and preferences. Wake word detection ("Hey [robot name]!"). Consistent character personality via system prompt.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Reused SR8855 Components</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Component</th><th>Original purpose</th><th>New purpose</th><th>Phase</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Chassis &amp; wheels</strong></td><td>Robot vacuum platform</td><td>Robot pet base</td><td><span class="badge badge-amber">1</span></td></tr>
+            <tr><td><strong>Drive motors (×2)</strong></td><td>Left/right locomotion</td><td>Left/right locomotion</td><td><span class="badge badge-amber">1</span></td></tr>
+            <tr><td><strong>Cliff sensors (×4)</strong></td><td>Drop detection</td><td>Drop detection + surface mood triggers</td><td><span class="badge badge-amber">1</span></td></tr>
+            <tr><td><strong>Bump sensor ring</strong></td><td>Collision detection</td><td>Directional collision + character reaction</td><td><span class="badge badge-amber">1</span></td></tr>
+            <tr><td><strong>Obstacle IR sensors</strong></td><td>Object proximity</td><td>Obstacle avoidance (may replace HC-SR04)</td><td><span class="badge badge-amber">1</span></td></tr>
+            <tr><td><strong>Ceiling camera</strong></td><td>Visual ceiling navigation (VSLAM)</td><td>VSLAM room mapping + positioning</td><td><span class="badge badge-cyan">2</span></td></tr>
+            <tr><td><strong>Sweeper motors (×2)</strong></td><td>Side brush rotation</td><td>Animated ear/appendage physical expression</td><td><span class="badge badge-purple">3</span></td></tr>
+            <tr><td><strong>Vacuum motor</strong></td><td>Suction fan</td><td>"Sniff/sneeze" character effect + Pi cooling</td><td><span class="badge badge-purple">3</span></td></tr>
+            <tr><td><strong>Dock + IR emitters</strong></td><td>Auto charge + homing</td><td>Auto charge (Ryobi) + IR homing navigation</td><td><span class="badge badge-cyan">2</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Current Status</div>
+      <div class="grid-2">
+        <div class="card card-green">
+          <h3 style="color:var(--green);margin-bottom:10px">✓ Completed</h3>
+          <ul class="styled">
+            <li>Full project architecture designed</li>
+            <li>Phase roadmap defined</li>
+            <li>Motor driver selected (Cytron MDD10A)</li>
+            <li>Power architecture finalised (Ryobi ONE+)</li>
+            <li>Bench wiring diagram created</li>
+            <li>Phase 1 components ordered (AliExpress)</li>
+          </ul>
+        </div>
+        <div class="card card-amber">
+          <h3 style="color:var(--amber);margin-bottom:10px">⏳ Pending</h3>
+          <ul class="styled">
+            <li>Order Cytron MDD10A (Amazon.co.uk)</li>
+            <li>Order Ryobi ONE+ battery adapter (eBay UK)</li>
+            <li>AliExpress components arriving (3–6 weeks)</li>
+            <li>SR8855 teardown + component audit</li>
+            <li>Bench test with AA batteries + test motor</li>
+            <li>Identify ceiling camera connector type</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Key Context for AI Systems</div>
+      <div class="info-box">
+        <strong>Note for AI assistants:</strong> This project uses a Ryobi ONE+ 18V battery (peaks at 21V fully charged). The motor driver MUST be rated above 21V — the Cytron MDD10A (5–30V) is chosen specifically for this. The TB6612FNG (15V max) is retained only for Phase 3 secondary motors running from a stepped-down supply. The original Samsung PCB is completely removed and replaced — no Samsung firmware or software is used. All control is via Raspberry Pi GPIO in Python.
+      </div>
+    </div>
+
+  </div>
+</main>
+
+</body>
+</html>

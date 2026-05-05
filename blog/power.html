@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Robot Pet Project — Power System</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🤖</div>
+    <div class="logo-title">Robot Pet<br>Project</div>
+    <div class="logo-sub">SR8855 → AI Companion</div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section">Navigation</div>
+    <a href="index.html" class="nav-link"><span class="nav-icon">⌂</span> Overview</a>
+    <a href="phases.html" class="nav-link"><span class="nav-icon">◈</span> Phases</a>
+    <a href="hardware.html" class="nav-link"><span class="nav-icon">⚙</span> Hardware</a>
+    <a href="power.html" class="nav-link active"><span class="nav-icon">⚡</span> Power System</a>
+    <a href="wiring.html" class="nav-link"><span class="nav-icon">⌁</span> Wiring</a>
+    <a href="software.html" class="nav-link"><span class="nav-icon">◻</span> Software</a>
+    <a href="decisions.html" class="nav-link"><span class="nav-icon">✦</span> Decision Log</a>
+  </div>
+  <div class="sidebar-footer">
+    <div class="status-pill"><span class="status-dot"></span> Phase 1 — Active</div>
+  </div>
+</nav>
+
+<main class="main">
+  <div class="page-header">
+    <div class="page-eyebrow">Electrical Architecture</div>
+    <h1 class="page-title">Power <span>System</span></h1>
+    <p class="page-desc">Ryobi ONE+ 18V tool batteries provide hot-swappable unlimited runtime. A single buck converter steps voltage down for the Pi. The Cytron MDD10A handles motor power natively at battery voltage.</p>
+  </div>
+
+  <div class="content">
+
+    <div class="section">
+      <div class="section-title">Architecture Overview</div>
+
+      <div class="warn-box">
+        <strong>Critical voltage note:</strong> Ryobi ONE+ batteries are 18V nominal but reach <strong>~21V when fully charged</strong> (5S Li-ion: 5 × 4.2V). All motor-side components must be rated above 21V. The Cytron MDD10A (rated 30V) is chosen specifically for this. The TB6612FNG (max 15V) must NEVER be connected directly to the Ryobi battery — it is used only for secondary motors in Phase 3 running from a stepped-down supply.
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <h3 style="margin-bottom:16px;color:var(--amber);font-family:var(--font-mono)">Power Flow</h3>
+
+        <div style="margin-bottom:12px">
+          <div style="font-family:var(--font-code);font-size:11px;color:var(--text3);margin-bottom:6px">MOTOR POWER PATH</div>
+          <div class="flow">
+            <div class="flow-box fb-bat">Ryobi ONE+<br>18V (21V max)</div>
+            <div class="flow-arr">→</div>
+            <div class="flow-box fb-driver">Cytron MDD10A<br>rated 30V</div>
+            <div class="flow-arr">→</div>
+            <div class="flow-box fb-motor">Left drive<br>motor</div>
+            <div class="flow-arr">+</div>
+            <div class="flow-box fb-motor">Right drive<br>motor</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:12px">
+          <div style="font-family:var(--font-code);font-size:11px;color:var(--text3);margin-bottom:6px">PI POWER PATH</div>
+          <div class="flow">
+            <div class="flow-box fb-bat">Ryobi ONE+<br>18V (21V max)</div>
+            <div class="flow-arr">→</div>
+            <div class="flow-box fb-buck">Buck converter<br>18V → 5V</div>
+            <div class="flow-arr">→</div>
+            <div class="flow-box fb-pi">Raspberry Pi 4<br>via USB-C</div>
+            <div class="flow-arr">→</div>
+            <div class="flow-box fb-driver">MDD10A logic<br>(3.3V GPIO)</div>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-family:var(--font-code);font-size:11px;color:var(--text3);margin-bottom:6px">PHASE 3 — SECONDARY MOTOR PATH</div>
+          <div class="flow">
+            <div class="flow-box fb-bat">Ryobi ONE+<br>18V</div>
+            <div class="flow-arr">→</div>
+            <div class="flow-box fb-buck">Buck converter<br>18V → 12V</div>
+            <div class="flow-arr">→</div>
+            <div class="flow-box fb-driver">TB6612FNG<br>(max 15V ✓)</div>
+            <div class="flow-arr">→</div>
+            <div class="flow-box fb-motor">Sweeper motors<br>+ vacuum motor</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Ryobi ONE+ Battery System</div>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Battery Specifications</h3>
+          <div class="spec-grid" style="margin-top:12px">
+            <span class="spec-key">Chemistry</span><span class="spec-val">Li-ion, 5S configuration</span>
+            <span class="spec-key">Nominal V</span><span class="spec-val"><strong>18V</strong> (5 × 3.6V)</span>
+            <span class="spec-key">Max charge V</span><span class="spec-val"><strong>21V</strong> (5 × 4.2V) ← design limit</span>
+            <span class="spec-key">Discharge cutoff</span><span class="spec-val">~15V (BMS controlled)</span>
+            <span class="spec-key">Capacity</span><span class="spec-val">2Ah–9Ah depending on model</span>
+            <span class="spec-key">BMS</span><span class="spec-val">Built-in (overcurrent, temp, short circuit)</span>
+            <span class="spec-key">Connector</span><span class="spec-val">Ryobi ONE+ sliding rail, 4+ pins</span>
+          </div>
+        </div>
+        <div class="card card-green">
+          <h3>Why Ryobi ONE+?</h3>
+          <ul class="styled" style="margin-top:12px">
+            <li>Multiple batteries already owned — zero cost</li>
+            <li>Hot-swappable: robot never needs to wait to recharge</li>
+            <li>Built-in BMS handles all safety (overcurrent, temperature, short circuit)</li>
+            <li>High capacity (even 2Ah = hours of pet-speed wandering)</li>
+            <li>Chargers already owned</li>
+            <li>Dock modification enables autonomous recharging (Phase 2+)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="warn-box">
+        <strong>Polarity warning:</strong> The Cytron MDD10A has <strong>no reverse polarity protection on the motor power input (VMOT)</strong>. Connecting the Ryobi adapter the wrong way will instantly destroy the board. Always verify polarity with a multimeter before connecting. Check: red wire = positive, black = negative. Measure at the adapter terminals before connecting to MDD10A.
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Cytron MDD10A — Motor Driver</div>
+      <div class="grid-2">
+        <div class="card card-cyan">
+          <h3>Why MDD10A not TB6612FNG?</h3>
+          <p style="font-size:13px;margin-top:8px">The TB6612FNG has a 15V maximum motor voltage. The Ryobi battery peaks at 21V fully charged — this would immediately destroy the TB6612FNG. The MDD10A is rated to 30V, giving 9V of headroom over the battery's maximum. It also provides 10A continuous (vs 1.2A), which is far better suited to the SR8855's original drive motors.</p>
+        </div>
+        <div class="card">
+          <h3>MDD10A Specifications</h3>
+          <div class="spec-grid" style="margin-top:12px">
+            <span class="spec-key">Motor voltage</span><span class="spec-val"><strong>5–30V</strong> (Ryobi 21V max ✓)</span>
+            <span class="spec-key">Current</span><span class="spec-val">10A continuous, 30A peak/channel</span>
+            <span class="spec-key">Channels</span><span class="spec-val">2 (left + right drive motors)</span>
+            <span class="spec-key">Logic voltage</span><span class="spec-val">3.3V or 5V (Pi compatible)</span>
+            <span class="spec-key">Control</span><span class="spec-val">PWM + DIR per channel</span>
+            <span class="spec-key">PWM freq</span><span class="spec-val">Up to 20kHz</span>
+            <span class="spec-key">5V output</span><span class="spec-val">200mA onboard (logic only, not Pi)</span>
+            <span class="spec-key">Reverse protection</span><span class="spec-val">None on VMOT — check polarity!</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Buck Converter — Pi Power</div>
+      <div class="card">
+        <h3>Specification requirements</h3>
+        <p style="font-size:13px;margin-top:8px;margin-bottom:14px">The buck converter steps the Ryobi battery voltage down to 5V for the Pi. The input must accept up to 21V (battery fully charged). Order a "24V to 5V" variant — not "12V to 5V" — to ensure adequate headroom. Output must supply at least 3A for Pi 4 under load (it draws up to 3A peak).</p>
+        <div class="spec-grid">
+          <span class="spec-key">Input range</span><span class="spec-val">Must accept <strong>6V–24V minimum</strong> (Ryobi peaks at 21V)</span>
+          <span class="spec-key">Output</span><span class="spec-val"><strong>5V, ≥3A</strong></span>
+          <span class="spec-key">Connection to Pi</span><span class="spec-val">USB-C barrel or GPIO 5V pin</span>
+          <span class="spec-key">Ordered variant</span><span class="spec-val">AliExpress "24V to 5V" DC-DC step-down</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Autonomous Dock Charging (Phase 2+)</div>
+
+      <div class="card card-amber">
+        <h3>The concept</h3>
+        <p style="font-size:13px;margin-top:8px">The SR8855 docking station is modified to house a disassembled Ryobi ONE+ compact charger PCB. The dock's mains cable connects to the Ryobi charger's AC input. The charger's battery output connects to upgraded dock contact pins. When the robot docks (guided by IR homing), spring-loaded contacts connect the charger to the Ryobi battery mounted on the robot chassis.</p>
+        <p style="font-size:13px">This approach uses the genuine Ryobi charger IC — no custom charging circuit required. All temperature monitoring, cell balancing, and BMS communication is handled by the Ryobi charger hardware exactly as designed.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Contact pin upgrade required</h3>
+          <p style="font-size:13px;margin-top:8px">The original SR8855 dock has 2 contact pins (V+, V−). Ryobi charging requires at minimum 3 pins: V+, V−, and T (thermistor for temperature monitoring). The dock contact mechanism must be upgraded to a 3–4 pin arrangement. New spring contacts can be sourced cheaply and fitted alongside the originals.</p>
+        </div>
+        <div class="card">
+          <h3>Routing challenge</h3>
+          <p style="font-size:13px;margin-top:8px">The Ryobi battery sits on top of the robot. Dock contacts are on the bottom. Wires must route from the battery adapter (top) through the chassis to the contact pads (bottom). Plan this routing during the initial teardown — leave a cable path clear before reassembling.</p>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <strong>Recommended charger:</strong> Ryobi PCG001 or RC18120 (compact charger). Second-hand from eBay ~£10–15. Compact PCB size makes fitting inside the dock realistic. Slow-ish charge rate is fine — the robot isn't in a hurry and can charge overnight.
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Battery Mounting on Chassis</div>
+      <div class="grid-3">
+        <div class="card card-green">
+          <h3>Option A — 3D printed dock</h3>
+          <p style="font-size:13px;margin-top:8px">3D printed Ryobi tool body rail mounted to chassis top. Battery plugs in from above. Thingiverse has Ryobi ONE+ dock models. Looks intentional — "energy pack" aesthetic suits the robot pet character. Best option if 3D printer access available.</p>
+        </div>
+        <div class="card card-amber">
+          <h3>Option B — L-bracket</h3>
+          <p style="font-size:13px;margin-top:8px">Aluminium right-angle extrusion from B&Q (~£3) bolted through chassis lid. Battery adapter clamped to bracket. No printer needed, available today. Less elegant but fully functional.</p>
+        </div>
+        <div class="card">
+          <h3>Option C — Dust bin cavity</h3>
+          <p style="font-size:13px;margin-top:8px">Former dust bin compartment (~120×80×70mm). Compact 2Ah Ryobi may fit. Keeps low profile. Measure before committing — tight fit only works with slimmest battery variants.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+</body>
+</html>

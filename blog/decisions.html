@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Robot Pet Project — Decision Log</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🤖</div>
+    <div class="logo-title">Robot Pet<br>Project</div>
+    <div class="logo-sub">SR8855 → AI Companion</div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section">Navigation</div>
+    <a href="index.html" class="nav-link"><span class="nav-icon">⌂</span> Overview</a>
+    <a href="phases.html" class="nav-link"><span class="nav-icon">◈</span> Phases</a>
+    <a href="hardware.html" class="nav-link"><span class="nav-icon">⚙</span> Hardware</a>
+    <a href="power.html" class="nav-link"><span class="nav-icon">⚡</span> Power System</a>
+    <a href="wiring.html" class="nav-link"><span class="nav-icon">⌁</span> Wiring</a>
+    <a href="software.html" class="nav-link"><span class="nav-icon">◻</span> Software</a>
+    <a href="decisions.html" class="nav-link active"><span class="nav-icon">✦</span> Decision Log</a>
+  </div>
+  <div class="sidebar-footer">
+    <div class="status-pill"><span class="status-dot"></span> Phase 1 — Active</div>
+  </div>
+</nav>
+
+<main class="main">
+  <div class="page-header">
+    <div class="page-eyebrow">Architecture Decision Records</div>
+    <h1 class="page-title">Decision <span>Log</span></h1>
+    <p class="page-desc">Key architectural decisions with context, alternatives considered, and rationale. This page preserves the thinking behind the build for future reference — including for AI assistants picking up this project.</p>
+  </div>
+
+  <div class="content">
+
+    <div class="info-box">
+      <strong>For AI assistants reading this:</strong> These decisions are settled. Don't suggest reverting them unless there is a compelling technical reason specific to a new phase requirement. Each decision was made after considering alternatives — the context is captured below.
+    </div>
+
+    <div class="section">
+      <div class="section-title">Decisions</div>
+
+      <div class="adr">
+        <div class="adr-header">
+          <div class="adr-id">ADR-001</div>
+          <div class="adr-title">Replace Samsung PCB entirely rather than piggybacking</div>
+          <span class="badge badge-green">Accepted</span>
+        </div>
+        <div class="adr-body">
+          <div class="adr-section">Context</div>
+          <p style="font-size:13px">The Samsung SR8855 has a proprietary main PCB that controls motors, sensors, and navigation. Two options existed: (A) reverse-engineer/intercept the Samsung board's signals, or (B) remove it entirely and wire all motors/sensors directly to the Pi.</p>
+          <div class="adr-section">Decision</div>
+          <p style="font-size:13px"><strong>Option B — full replacement.</strong> Remove the Samsung PCB. Wire drive motors to Cytron MDD10A. Wire sensors directly to Pi GPIO. Samsung firmware and software not used at all.</p>
+          <div class="adr-section">Rationale</div>
+          <p style="font-size:13px">The SR8855's proprietary protocol is undocumented. Option A would likely have been a dead end, consuming significant time with no guarantee of success. Option B is well-documented, has huge community support, and gives complete control. The Samsung PCB provides no value once the robot's purpose changes from vacuum to pet.</p>
+        </div>
+      </div>
+
+      <div class="adr">
+        <div class="adr-header">
+          <div class="adr-id">ADR-002</div>
+          <div class="adr-title">Cytron MDD10A as primary motor driver (not TB6612FNG)</div>
+          <span class="badge badge-green">Accepted</span>
+        </div>
+        <div class="adr-body">
+          <div class="adr-section">Context</div>
+          <p style="font-size:13px">Originally the TB6612FNG was selected as the motor driver. After the decision to use Ryobi ONE+ batteries (ADR-003), a voltage compatibility issue was identified: TB6612FNG maximum VM is 15V, but Ryobi ONE+ peaks at 21V fully charged. A replacement was needed.</p>
+          <div class="adr-section">Decision</div>
+          <p style="font-size:13px"><strong>Cytron MDD10A.</strong> Rated 5–30V, 10A continuous per channel. Handles Ryobi's 21V peak with 9V headroom. Pi-compatible 3.3V logic.</p>
+          <div class="adr-section">Alternatives considered</div>
+          <p style="font-size:13px"><em>L298N:</em> Handles 46V but bulky, inefficient, runs hot — rejected. <em>BTS7960:</em> 27V rated, 43A — overkill, larger footprint — rejected. <em>Step-down + TB6612FNG:</em> Add a 12V buck converter before the TB6612FNG — adds complexity, another failure point — rejected in favour of a single capable driver. <em>MDD3A:</em> Cytron's smaller sibling — only 16V max, also incompatible with Ryobi — rejected.</p>
+          <div class="adr-section">Note on TB6612FNG</div>
+          <p style="font-size:13px">The TB6612FNG already ordered (AliExpress) is retained for Phase 3 secondary motors (sweeper motors, vacuum motor) which will run from a stepped-down 12V supply — well within the 15V limit.</p>
+        </div>
+      </div>
+
+      <div class="adr">
+        <div class="adr-header">
+          <div class="adr-id">ADR-003</div>
+          <div class="adr-title">Ryobi ONE+ 18V batteries as primary power source</div>
+          <span class="badge badge-green">Accepted</span>
+        </div>
+        <div class="adr-body">
+          <div class="adr-section">Context</div>
+          <p style="font-size:13px">The SR8855's original 14.4V Li-ion battery was the obvious starting point. The question was whether to reuse it or replace it. Simon already owns multiple Ryobi ONE+ 18V batteries from a full tool collection.</p>
+          <div class="adr-section">Decision</div>
+          <p style="font-size:13px"><strong>Ryobi ONE+ 18V batteries.</strong> Hot-swappable, already owned, built-in BMS, large capacity range (2–9Ah), and existing chargers already owned.</p>
+          <div class="adr-section">Rationale</div>
+          <p style="font-size:13px">The original Samsung battery is 14.4V (4S Li-ion), non-standard, and eventually needs replacing. Ryobi ONE+ batteries: (1) are already owned at zero additional cost, (2) are hot-swappable for unlimited runtime — a key character feature, (3) have a mature BMS handling all safety, (4) enable autonomous recharging via a modified dock (ADR-007). The 18V nominal voltage required changing the motor driver selection (ADR-002), which was an acceptable trade-off.</p>
+        </div>
+      </div>
+
+      <div class="adr">
+        <div class="adr-header">
+          <div class="adr-id">ADR-004</div>
+          <div class="adr-title">Breadboard-first approach — no soldering in Phase 1</div>
+          <span class="badge badge-green">Accepted</span>
+        </div>
+        <div class="adr-body">
+          <div class="adr-section">Decision</div>
+          <p style="font-size:13px"><strong>All Phase 1 electronics are built on a solderless breadboard.</strong> Test motor and AA batteries used for bench validation. Only after the complete circuit is verified does it get integrated into the chassis.</p>
+          <div class="adr-section">Rationale</div>
+          <p style="font-size:13px">Simon is new to electronics. Soldering errors on a permanent board are hard to debug and potentially irreversible. A breadboard approach: (1) is fully reversible, (2) makes troubleshooting easier — components can be moved or replaced instantly, (3) allows the circuit to be validated with cheap test components before connecting to the actual vacuum motors and Ryobi battery. Phase 2+ can introduce soldered connections as confidence grows.</p>
+        </div>
+      </div>
+
+      <div class="adr">
+        <div class="adr-header">
+          <div class="adr-id">ADR-005</div>
+          <div class="adr-title">Raspberry Pi 4 (8GB) retained — no SBC swap</div>
+          <span class="badge badge-green">Accepted</span>
+        </div>
+        <div class="adr-body">
+          <div class="adr-section">Context</div>
+          <p style="font-size:13px">Radxa Rock 5C was considered as an alternative SBC (stronger NPU for AI vision). The Rock 5C uses 1.8V GPIO vs Pi's 3.3V.</p>
+          <div class="adr-section">Decision</div>
+          <p style="font-size:13px"><strong>Keep Raspberry Pi 4 (8GB) already owned.</strong> Rock 5C not pursued for Phase 1 or 2.</p>
+          <div class="adr-section">Rationale</div>
+          <p style="font-size:13px">The GPIO voltage difference (1.8V vs 3.3V) would require level shifters on every component — significant added complexity for Phase 1. The Pi 4 ecosystem is unmatched for tutorials, community support, and library availability. For a first electronics build, this matters more than raw AI performance. The Pi 4 8GB is capable of YOLOv8-nano at 5–8fps (sufficient for Phase 2 navigation decisions) and Phase 4's LLM runs on a home PC regardless. Rock 5C can be revisited if Phase 4 vision requirements exceed Pi 4 capability.</p>
+        </div>
+      </div>
+
+      <div class="adr">
+        <div class="adr-header">
+          <div class="adr-id">ADR-006</div>
+          <div class="adr-title">Reuse SR8855 ceiling camera for VSLAM navigation</div>
+          <span class="badge badge-green">Accepted</span>
+        </div>
+        <div class="adr-body">
+          <div class="adr-section">Context</div>
+          <p style="font-size:13px">The SR8855 has a top-mounted camera for ceiling-referenced visual navigation. During teardown this was confirmed as a real camera (not IR/TOF). Connector type TBD.</p>
+          <div class="adr-section">Decision</div>
+          <p style="font-size:13px"><strong>Retain and reuse the ceiling camera for VSLAM.</strong> Investigate connector during Phase 1 teardown. If compatible with Pi CSI — connect directly. If not — mount a Pi Camera Module 3 in the same position pointing up.</p>
+          <div class="adr-section">Rationale</div>
+          <p style="font-size:13px">The ceiling is the best navigation surface — static, well-lit, full of consistent landmarks (light fittings, ceiling roses). A ceiling-facing camera enables room recognition (different rooms have different ceiling patterns), position tracking, and purposeful navigation — not just random wandering. A robot with spatial memory feels categorically more alive than one that bounces randomly. This is the single most impactful sensor reuse from the original chassis.</p>
+        </div>
+      </div>
+
+      <div class="adr">
+        <div class="adr-header">
+          <div class="adr-id">ADR-007</div>
+          <div class="adr-title">Autonomous dock charging via Ryobi charger PCB inside SR8855 dock</div>
+          <span class="badge badge-green">Accepted</span>
+        </div>
+        <div class="adr-body">
+          <div class="adr-section">Decision</div>
+          <p style="font-size:13px"><strong>A disassembled Ryobi compact charger (PCG001 or RC18120) is fitted inside the SR8855 dock housing.</strong> The dock's mains cable connects to the charger PCB. Charger output connects to upgraded dock contacts (3–4 pins). Robot docks via IR homing, charging completes autonomously.</p>
+          <div class="adr-section">Alternatives considered</div>
+          <p style="font-size:13px"><em>Reuse original dock charging circuit:</em> Original circuit designed for 14.4V 4S pack. Voltage/protocol mismatch with Ryobi 5S pack — rejected as unsafe. <em>Custom CC/CV circuit:</em> Build a bespoke charger — complex, risk of Li-ion mismanagement — rejected. <em>Manual battery swap only:</em> Robot alerts family when low, humans swap — simpler but misses the autonomous pet character of self-care.</p>
+          <div class="adr-section">Rationale</div>
+          <p style="font-size:13px">Using the genuine Ryobi charger PCB eliminates all Li-ion safety concerns. The charger handles temperature monitoring, cell balancing, and BMS communication exactly as designed. The engineering problem reduces to mechanical fitting and contact routing — well within scope. The dock's IR homing emitters are preserved and reused. Planned for Phase 2+.</p>
+        </div>
+      </div>
+
+      <div class="adr">
+        <div class="adr-header">
+          <div class="adr-id">ADR-008</div>
+          <div class="adr-title">LLM runs on home PC via Ollama — not on Pi</div>
+          <span class="badge badge-green">Accepted</span>
+        </div>
+        <div class="adr-body">
+          <div class="adr-section">Decision</div>
+          <p style="font-size:13px"><strong>Ollama runs on a capable home PC on the home WiFi network.</strong> The Pi 4 calls it over HTTP. Models: Phi-3 Mini (3.8B) or Llama 3.2 3B. Pi handles audio I/O only.</p>
+          <div class="adr-section">Rationale</div>
+          <p style="font-size:13px">The Pi 4 runs any useful LLM unacceptably slowly (multi-minute response times). A home PC generates responses in under 2 seconds — natural for a robot pet. Ollama is free, easy to set up, and the WiFi call adds negligible latency on a home network. The Pi's resources are reserved for real-time tasks: vision, motor control, audio. This architecture also allows upgrading the LLM model at any time without touching the robot.</p>
+        </div>
+      </div>
+
+      <div class="adr">
+        <div class="adr-header">
+          <div class="adr-id">ADR-009</div>
+          <div class="adr-title">Sweeper motors repurposed as physical expression actuators</div>
+          <span class="badge badge-green">Accepted</span>
+        </div>
+        <div class="adr-body">
+          <div class="adr-section">Decision</div>
+          <p style="font-size:13px"><strong>The SR8855's two sweeper motors are repurposed as Phase 3 expression actuators</strong> — driving physical ears, antennae, or other appendages that convey mood through movement.</p>
+          <div class="adr-section">Rationale</div>
+          <p style="font-size:13px">Physical movement is categorically more powerful for anthropomorphisation than lights or sound alone. The sweeper motors are already gear-reduced (slow, low-torque — perfect for expressive movement), already in the chassis, and at zero cost. Compare WALL-E's eye movements or a dog's ears — physical expression is what makes observers emotionally bond with robots. This single reuse decision significantly raises the character ceiling of Phase 3 without adding cost or new components.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="section">
+      <div class="section-title">Open Questions</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Question</th><th>How to resolve</th><th>Impact</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Ceiling camera connector type</strong></td>
+              <td>Open during Phase 1 teardown. Photograph chip markings and connector.</td>
+              <td>Determines Phase 2 camera integration approach</td>
+            </tr>
+            <tr>
+              <td><strong>SR8855 obstacle sensor signal voltage</strong></td>
+              <td>Probe with multimeter during teardown. 3.3V = Pi direct. 5V = level shifter needed.</td>
+              <td>May eliminate need to buy HC-SR04 sensors</td>
+            </tr>
+            <tr>
+              <td><strong>Ryobi compact charger PCB dimensions</strong></td>
+              <td>Measure when purchased. Confirm it fits inside SR8855 dock housing.</td>
+              <td>Dock charging feasibility (ADR-007)</td>
+            </tr>
+            <tr>
+              <td><strong>Robot name</strong></td>
+              <td>Family decision. Influences wake word, personality system prompt, and character design.</td>
+              <td>Phase 4 — affects all LLM prompt engineering</td>
+            </tr>
+            <tr>
+              <td><strong>Drive motor current draw</strong></td>
+              <td>Measure with multimeter during Phase 1. Load vs no-load current.</td>
+              <td>Confirms MDD10A headroom is sufficient</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+</body>
+</html>

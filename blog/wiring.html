@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Robot Pet Project — Wiring</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🤖</div>
+    <div class="logo-title">Robot Pet<br>Project</div>
+    <div class="logo-sub">SR8855 → AI Companion</div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section">Navigation</div>
+    <a href="index.html" class="nav-link"><span class="nav-icon">⌂</span> Overview</a>
+    <a href="phases.html" class="nav-link"><span class="nav-icon">◈</span> Phases</a>
+    <a href="hardware.html" class="nav-link"><span class="nav-icon">⚙</span> Hardware</a>
+    <a href="power.html" class="nav-link"><span class="nav-icon">⚡</span> Power System</a>
+    <a href="wiring.html" class="nav-link active"><span class="nav-icon">⌁</span> Wiring</a>
+    <a href="software.html" class="nav-link"><span class="nav-icon">◻</span> Software</a>
+    <a href="decisions.html" class="nav-link"><span class="nav-icon">✦</span> Decision Log</a>
+  </div>
+  <div class="sidebar-footer">
+    <div class="status-pill"><span class="status-dot"></span> Phase 1 — Active</div>
+  </div>
+</nav>
+
+<main class="main">
+  <div class="page-header">
+    <div class="page-eyebrow">Electronics</div>
+    <h1 class="page-title">Wiring <span>Guide</span></h1>
+    <p class="page-desc">Step-by-step wiring for Phase 1 bench testing. Start on breadboard with AA batteries and a test motor — validate the circuit before touching the vacuum chassis.</p>
+  </div>
+
+  <div class="content">
+
+    <div class="section">
+      <div class="section-title">Before You Start</div>
+      <div class="info-box">
+        <strong>Breadboard-first rule:</strong> Build and test the entire circuit on a breadboard with a 4×AA battery pack and a small spare DC motor. Only when the Python test script drives the motor correctly should you progress to connecting the vacuum's motors and Ryobi battery. This prevents expensive mistakes on the real chassis.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Safety checklist</h3>
+          <ul class="styled" style="margin-top:8px">
+            <li>Measure battery voltage before connecting anything (4×AA = ~6V, Ryobi = 18–21V)</li>
+            <li>Verify MDD10A polarity with multimeter — no reverse protection</li>
+            <li>Pi powered OFF before wiring GPIO connections</li>
+            <li>Check GPIO voltage is 3.3V (not 5V) before connecting to MDD10A logic</li>
+            <li>Double-check all connections against table below before powering on</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Test with LED first</h3>
+          <p style="font-size:13px;margin-top:8px">Replace the motor and battery with a single LED (any colour) and 330Ω resistor between AO1 and GND. When the Python test script runs, the LED flickers with PWM. This confirms all connections are correct without motor/battery risk. Once working — swap in the real motor.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Phase 1 Bench Wiring — Pi 4 + Cytron MDD10A</div>
+
+      <div class="warn-box">
+        <strong>Note on motor driver change:</strong> The bench wiring diagram was originally designed for the TB6612FNG. The <strong>Cytron MDD10A</strong> is used instead (due to Ryobi 18V compatibility). Pinout is different — use the MDD10A connection table below, not any TB6612FNG diagrams.
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Wire colour</th><th>From</th><th>To</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-family:var(--font-mono);color:var(--amber)">01</td>
+              <td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#E24B4A;margin-right:6px;vertical-align:middle"></span>Red</td>
+              <td>4×AA battery <strong>+</strong></td>
+              <td>MDD10A — <code>VMOT</code></td>
+              <td>Motor supply voltage. Use 4×AA (~6V) for bench testing. Later: Ryobi via adapter.</td>
+            </tr>
+            <tr>
+              <td style="font-family:var(--font-mono);color:var(--amber)">02</td>
+              <td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#333;margin-right:6px;vertical-align:middle;border:1px solid #666"></span>Black</td>
+              <td>4×AA battery <strong>−</strong></td>
+              <td>MDD10A — <code>GND</code> (power side)</td>
+              <td>Must share ground rail with Pi. Pi GND and battery GND must be on same rail.</td>
+            </tr>
+            <tr>
+              <td style="font-family:var(--font-mono);color:var(--amber)">03</td>
+              <td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#333;margin-right:6px;vertical-align:middle;border:1px solid #666"></span>Black</td>
+              <td>Pi pin 6 — <code>GND</code></td>
+              <td>MDD10A — <code>GND</code> (logic side / same rail)</td>
+              <td>Common ground. Pi and motor driver must share this. Use same breadboard rail as battery −.</td>
+            </tr>
+            <tr>
+              <td style="font-family:var(--font-mono);color:var(--amber)">04</td>
+              <td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#378ADD;margin-right:6px;vertical-align:middle"></span>Blue</td>
+              <td>Pi GPIO 18 — pin 12</td>
+              <td>MDD10A — <code>PWM1</code></td>
+              <td>Speed control for Motor A (left drive). Hardware PWM pin — use GPIO 18 specifically.</td>
+            </tr>
+            <tr>
+              <td style="font-family:var(--font-mono);color:var(--amber)">05</td>
+              <td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#EF9F27;margin-right:6px;vertical-align:middle"></span>Orange</td>
+              <td>Pi GPIO 17 — pin 11</td>
+              <td>MDD10A — <code>DIR1</code></td>
+              <td>Direction control for Motor A. HIGH = forward, LOW = reverse (verify with test).</td>
+            </tr>
+            <tr>
+              <td style="font-family:var(--font-mono);color:var(--amber)">06</td>
+              <td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#22D3EE;margin-right:6px;vertical-align:middle"></span>Cyan</td>
+              <td>Pi GPIO 13 — pin 33</td>
+              <td>MDD10A — <code>PWM2</code></td>
+              <td>Speed control for Motor B (right drive). Hardware PWM pin — use GPIO 13 specifically.</td>
+            </tr>
+            <tr>
+              <td style="font-family:var(--font-mono);color:var(--amber)">07</td>
+              <td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#BA7517;margin-right:6px;vertical-align:middle"></span>Amber</td>
+              <td>Pi GPIO 27 — pin 13</td>
+              <td>MDD10A — <code>DIR2</code></td>
+              <td>Direction control for Motor B. HIGH = forward, LOW = reverse (verify with test).</td>
+            </tr>
+            <tr>
+              <td style="font-family:var(--font-mono);color:var(--amber)">08</td>
+              <td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#7F77DD;margin-right:6px;vertical-align:middle"></span>Purple</td>
+              <td>MDD10A — <code>A+</code></td>
+              <td>Left motor terminal A</td>
+              <td>Motor A output. If motor spins wrong way — swap A+ and A− at the motor end.</td>
+            </tr>
+            <tr>
+              <td style="font-family:var(--font-mono);color:var(--amber)">09</td>
+              <td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#7F77DD;margin-right:6px;vertical-align:middle"></span>Purple</td>
+              <td>MDD10A — <code>A−</code></td>
+              <td>Left motor terminal B</td>
+              <td>Motor A output. Polarity determines spin direction.</td>
+            </tr>
+            <tr>
+              <td style="font-family:var(--font-mono);color:var(--amber)">10</td>
+              <td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#A78BFA;margin-right:6px;vertical-align:middle"></span>Violet</td>
+              <td>MDD10A — <code>B+</code></td>
+              <td>Right motor terminal A</td>
+              <td>Motor B output. Same polarity logic as Motor A.</td>
+            </tr>
+            <tr>
+              <td style="font-family:var(--font-mono);color:var(--amber)">11</td>
+              <td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#A78BFA;margin-right:6px;vertical-align:middle"></span>Violet</td>
+              <td>MDD10A — <code>B−</code></td>
+              <td>Right motor terminal B</td>
+              <td>Motor B output.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">GPIO Pin Reference — Phase 1</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>GPIO (BCM)</th><th>Board pin</th><th>Role</th><th>Type</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>GPIO 18</code></td><td>Pin 12</td><td>Motor A speed (PWM1)</td><td>Output — PWM</td><td>Hardware PWM. Must use this specific pin.</td></tr>
+            <tr><td><code>GPIO 17</code></td><td>Pin 11</td><td>Motor A direction (DIR1)</td><td>Output — digital</td><td>Any GPIO works for direction.</td></tr>
+            <tr><td><code>GPIO 13</code></td><td>Pin 33</td><td>Motor B speed (PWM2)</td><td>Output — PWM</td><td>Hardware PWM. Must use this specific pin.</td></tr>
+            <tr><td><code>GPIO 27</code></td><td>Pin 13</td><td>Motor B direction (DIR2)</td><td>Output — digital</td><td></td></tr>
+            <tr><td><code>GPIO 22</code></td><td>Pin 15</td><td>Cliff sensor FL</td><td>Input — digital</td><td>Front-left cliff sensor from SR8855.</td></tr>
+            <tr><td><code>GPIO 23</code></td><td>Pin 16</td><td>Cliff sensor FC</td><td>Input — digital</td><td>Front-centre cliff sensor.</td></tr>
+            <tr><td><code>GPIO 24</code></td><td>Pin 18</td><td>Cliff sensor FR</td><td>Input — digital</td><td>Front-right cliff sensor.</td></tr>
+            <tr><td><code>GPIO 5</code></td><td>Pin 29</td><td>Bump sensor — left</td><td>Input — digital</td><td>SR8855 bumper ring, left zone.</td></tr>
+            <tr><td><code>GPIO 6</code></td><td>Pin 31</td><td>Bump sensor — right</td><td>Input — digital</td><td>SR8855 bumper ring, right zone.</td></tr>
+            <tr><td><code>GND</code></td><td>Pin 6</td><td>Common ground</td><td>Power</td><td>Shared with MDD10A and battery −.</td></tr>
+            <tr><td><code>3.3V</code></td><td>Pin 1</td><td>Sensor power</td><td>Power</td><td>For cliff and bump sensors.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tip-box">
+        <strong>T-cobbler tip:</strong> The T-cobbler breakout uses BCM numbering — e.g. "GPIO 18" on the cobbler = BCM 18 = physical board pin 12. Always reference the BCM number in Python code (when using <code>GPIO.setmode(GPIO.BCM)</code>). The physical pin numbers in the table above are just for locating pins on the Pi header.
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Sensor Wiring — SR8855 OEM Sensors</div>
+      <div class="info-box">
+        <strong>Assess before buying replacements:</strong> The SR8855's cliff sensors and obstacle sensors may be directly usable with the Pi. During teardown, photograph the sensor connector types and wire colours, then probe the output with a multimeter to determine: signal voltage (3.3V or 5V), output type (digital HIGH/LOW or analog), and number of wires (typically 3: VCC, GND, OUT). 3.3V digital output = plug straight into Pi GPIO. 5V output = needs a voltage divider or level shifter.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Cliff sensors (IR)</h3>
+          <div class="spec-grid" style="margin-top:10px">
+            <span class="spec-key">Count</span><span class="spec-val">4 (one per corner)</span>
+            <span class="spec-key">Type</span><span class="spec-val">IR emitter + detector pair</span>
+            <span class="spec-key">Function</span><span class="spec-val">LOW = floor detected, HIGH = cliff/drop</span>
+            <span class="spec-key">Wires</span><span class="spec-val">Typically 3: VCC, GND, OUT</span>
+            <span class="spec-key">GPIO</span><span class="spec-val">22, 23, 24, 25 (4 sensors)</span>
+            <span class="spec-key">Pull-up</span><span class="spec-val">Use Pi internal pull-up resistor</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Bump sensor ring</h3>
+          <div class="spec-grid" style="margin-top:10px">
+            <span class="spec-key">Type</span><span class="spec-val">Mechanical switch(es)</span>
+            <span class="spec-key">Function</span><span class="spec-val">Directional collision detection</span>
+            <span class="spec-key">Zones</span><span class="spec-val">Left / centre / right (multiple switches)</span>
+            <span class="spec-key">Wires</span><span class="spec-val">2 per switch: signal + GND</span>
+            <span class="spec-key">GPIO</span><span class="spec-val">5 (left), 6 (right)</span>
+            <span class="spec-key">Pull-up</span><span class="spec-val">Pi internal pull-up, switch to GND</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Troubleshooting</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Symptom</th><th>Likely cause</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr><td>Motor doesn't spin at all</td><td>VMOT not connected, or battery not providing power</td><td>Measure VMOT with multimeter — should read battery voltage when powered</td></tr>
+            <tr><td>Motor spins wrong direction</td><td>Motor polarity reversed</td><td>Swap A+ and A− at the motor terminals. Or flip DIR pin logic in code.</td></tr>
+            <tr><td>Motor runs but Pi can't control it</td><td>Ground not shared between Pi and motor circuit</td><td>Ensure Pi GND and battery GND are on the same breadboard rail</td></tr>
+            <tr><td>Pi boots but GPIO does nothing</td><td>Wrong GPIO mode or pin numbers</td><td>Verify BCM mode set in code. Check physical pin vs BCM numbering.</td></tr>
+            <tr><td>Erratic motor behaviour</td><td>Power supply can't supply enough current</td><td>Check battery voltage under load. 4×AA may sag. Try fresh batteries.</td></tr>
+            <tr><td>Cliff sensor always reads HIGH</td><td>Sensor unpowered or wrong voltage</td><td>Measure VCC pin on sensor — should read 3.3V. Check GND connection.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+</body>
+</html>

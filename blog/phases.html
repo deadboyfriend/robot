@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Robot Pet Project — Phases</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🤖</div>
+    <div class="logo-title">Robot Pet<br>Project</div>
+    <div class="logo-sub">SR8855 → AI Companion</div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section">Navigation</div>
+    <a href="index.html" class="nav-link"><span class="nav-icon">⌂</span> Overview</a>
+    <a href="phases.html" class="nav-link active"><span class="nav-icon">◈</span> Phases</a>
+    <a href="hardware.html" class="nav-link"><span class="nav-icon">⚙</span> Hardware</a>
+    <a href="power.html" class="nav-link"><span class="nav-icon">⚡</span> Power System</a>
+    <a href="wiring.html" class="nav-link"><span class="nav-icon">⌁</span> Wiring</a>
+    <a href="software.html" class="nav-link"><span class="nav-icon">◻</span> Software</a>
+    <a href="decisions.html" class="nav-link"><span class="nav-icon">✦</span> Decision Log</a>
+  </div>
+  <div class="sidebar-footer">
+    <div class="status-pill"><span class="status-dot"></span> Phase 1 — Active</div>
+  </div>
+</nav>
+
+<main class="main">
+  <div class="page-header">
+    <div class="page-eyebrow">Build Roadmap</div>
+    <h1 class="page-title">Build <span>Phases</span></h1>
+    <p class="page-desc">Four phases, each independently rewarding. Each phase delivers something satisfying to the family while building toward the full vision. No phase is wasted — every step is a working robot.</p>
+  </div>
+
+  <div class="content">
+
+    <!-- PHASE 1 -->
+    <div class="section">
+      <div class="section-title" style="color:var(--amber)">Phase 1 — Moving Chassis</div>
+      <div class="card card-amber">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+          <h2 style="color:var(--amber);margin:0">Make it wander safely around the house</h2>
+          <span class="badge badge-amber">In Progress</span>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Overall progress</span><span>25%</span></div>
+          <div class="progress-bar"><div class="progress-fill p1-fill" style="width:25%"></div></div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:0">
+        <div class="card">
+          <h3>What you build</h3>
+          <ul class="styled" style="margin-top:10px">
+            <li>Remove Samsung PCB, replace with Pi + Cytron MDD10A</li>
+            <li>Connect existing cliff sensors to Pi GPIO</li>
+            <li>Connect existing bump sensor ring (directional)</li>
+            <li>Wire Ryobi battery adapter → MDD10A → drive motors</li>
+            <li>Buck converter for Pi power from Ryobi battery</li>
+            <li>Python wandering logic with random direction changes</li>
+            <li>Cliff/bump avoidance behaviour</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>What it can do</h3>
+          <ul class="styled" style="margin-top:10px">
+            <li>Wander autonomously for hours on a Ryobi battery</li>
+            <li>Detect stair edges and stop</li>
+            <li>Detect collisions (with directional awareness)</li>
+            <li>Bump, reverse, and pick a new direction</li>
+            <li>Hot-swap batteries for unlimited runtime</li>
+            <li>Run entirely from repurposed hardware</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="grid-3" style="margin-top:0">
+        <div class="card"><div style="font-family:var(--font-mono);font-size:22px;color:var(--amber);margin-bottom:4px">2–3</div><div style="font-size:12px;color:var(--text2)">weekends estimated</div></div>
+        <div class="card"><div style="font-family:var(--font-mono);font-size:22px;color:var(--amber);margin-bottom:4px">~£55</div><div style="font-size:12px;color:var(--text2)">new parts (most ordered)</div></div>
+        <div class="card"><div style="font-family:var(--font-mono);font-size:22px;color:var(--amber);margin-bottom:4px">GPIO</div><div style="font-size:12px;color:var(--text2)">key skill to learn</div></div>
+      </div>
+
+      <div class="card" style="margin-top:0">
+        <h3>Step-by-step checklist</h3>
+        <ul class="styled" style="margin-top:10px">
+          <li><strong>Step 1:</strong> Set up Pi 4 with Raspberry Pi OS 64-bit Lite. Enable SSH.</li>
+          <li><strong>Step 2:</strong> Build bench circuit on breadboard — Cytron MDD10A + 4×AA batteries + test motor. No vacuum yet.</li>
+          <li><strong>Step 3:</strong> Run LED test (LED + 330Ω resistor instead of motor). Verify GPIO control works.</li>
+          <li><strong>Step 4:</strong> Run motor test script — forward, reverse, turn. Verify motor responds correctly.</li>
+          <li><strong>Step 5:</strong> Open SR8855 chassis (see teardown guide). Document all connectors and sensors.</li>
+          <li><strong>Step 6:</strong> Identify and probe cliff sensor and bump sensor outputs with multimeter.</li>
+          <li><strong>Step 7:</strong> Connect cliff sensors to Pi GPIO. Test with Python — verify HIGH/LOW readings.</li>
+          <li><strong>Step 8:</strong> Integrate Ryobi battery adapter. Verify buck converter outputs 5V before connecting Pi.</li>
+          <li><strong>Step 9:</strong> Connect drive motors to MDD10A. Test forward/reverse/turn on bench.</li>
+          <li><strong>Step 10:</strong> Mount Pi, MDD10A, and buck converter inside chassis. Route all wiring.</li>
+          <li><strong>Step 11:</strong> Run wandering script with robot on floor. Observe and tune behaviour.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="section">
+      <div class="section-title" style="color:var(--cyan)">Phase 2 — Eyes &amp; Awareness</div>
+      <div class="card card-cyan">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+          <h2 style="color:var(--cyan);margin:0">Give it a sense of the space around it</h2>
+          <span class="badge badge-gray">Planned</span>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Overall progress</span><span>0%</span></div>
+          <div class="progress-bar"><div class="progress-fill p2-fill" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:0">
+        <div class="card">
+          <h3>What you build</h3>
+          <ul class="styled" style="margin-top:10px">
+            <li>Activate/interface SR8855 ceiling camera for VSLAM</li>
+            <li>Mount Pi Camera Module 3 facing forward</li>
+            <li>YOLOv8-nano object/person detection on Pi 4</li>
+            <li>Room mapping from ceiling visual landmarks</li>
+            <li>IR dock homing — robot can find and dock autonomously</li>
+            <li>Dock modification: Ryobi charger PCB inside dock housing</li>
+            <li>Smarter navigation — slows near people, avoids furniture</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>What it can do</h3>
+          <ul class="styled" style="margin-top:10px">
+            <li>Recognise people vs furniture vs pets</li>
+            <li>Know which room it's in</li>
+            <li>Navigate with intent — not just random wandering</li>
+            <li>Return to dock and recharge autonomously</li>
+            <li>Remember where it's been (basic spatial memory)</li>
+            <li>Pause and "look" when something interesting is detected</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <strong>Key prerequisite:</strong> During Phase 1 teardown, identify the ceiling camera connector type. If it's MIPI CSI-compatible, it connects to the Pi camera port directly. If not, a small Pi Camera Module 3 can be mounted pointing upward in the same position. Either way — the ceiling navigation approach is kept.
+      </div>
+
+      <div class="grid-3" style="margin-top:0">
+        <div class="card"><div style="font-family:var(--font-mono);font-size:22px;color:var(--cyan);margin-bottom:4px">2–3</div><div style="font-size:12px;color:var(--text2)">weekends estimated</div></div>
+        <div class="card"><div style="font-family:var(--font-mono);font-size:22px;color:var(--cyan);margin-bottom:4px">~£30</div><div style="font-size:12px;color:var(--text2)">new parts</div></div>
+        <div class="card"><div style="font-family:var(--font-mono);font-size:22px;color:var(--cyan);margin-bottom:4px">OpenCV</div><div style="font-size:12px;color:var(--text2)">key skill to learn</div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="section">
+      <div class="section-title" style="color:var(--purple)">Phase 3 — Character &amp; Expression</div>
+      <div class="card" style="border-color:rgba(167,139,250,0.3);background:linear-gradient(135deg,var(--surface),rgba(167,139,250,0.04))">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+          <h2 style="color:var(--purple);margin:0">Give it feelings the family can read</h2>
+          <span class="badge badge-gray">Planned</span>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Overall progress</span><span>0%</span></div>
+          <div class="progress-bar"><div class="progress-fill p3-fill" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:0">
+        <div class="card">
+          <h3>What you build</h3>
+          <ul class="styled" style="margin-top:10px">
+            <li>NeoPixel LED ring — animated "eye" with mood colours</li>
+            <li>Speaker + MAX98357A I2S amp — vocalisations</li>
+            <li>Sweeper motors → physical ear/appendage movement</li>
+            <li>Vacuum motor → "sniff/sneeze" character effect</li>
+            <li>Mood state machine (5 states: curious, excited, sleepy, startled, content)</li>
+            <li>Reactions tied to vision — different response per detected person</li>
+            <li>TB6612FNG for sweeper/vacuum motor control</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>What it can do</h3>
+          <ul class="styled" style="margin-top:10px">
+            <li>Express clear emotional states visually and audibly</li>
+            <li>Move physical ears/appendages expressively</li>
+            <li>React differently to family members vs strangers</li>
+            <li>Display different moods in different rooms</li>
+            <li>Feel genuinely like a pet — not a gadget</li>
+            <li>Get the family emotionally attached</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="tip-box">
+        <strong>The magic happens here:</strong> Phase 3 doesn't need AI at all. Pure Python state machine logic. The personality design — which colours, which sounds, which movement speeds for each mood — is creative work that makes this robot uniquely yours. This is where the robot stops being a project and becomes a family member.
+      </div>
+
+      <div class="grid-3" style="margin-top:0">
+        <div class="card"><div style="font-family:var(--font-mono);font-size:22px;color:var(--purple);margin-bottom:4px">3–4</div><div style="font-size:12px;color:var(--text2)">weekends estimated</div></div>
+        <div class="card"><div style="font-family:var(--font-mono);font-size:22px;color:var(--purple);margin-bottom:4px">~£20</div><div style="font-size:12px;color:var(--text2)">new parts</div></div>
+        <div class="card"><div style="font-family:var(--font-mono);font-size:22px;color:var(--purple);margin-bottom:4px">NeoPixel</div><div style="font-size:12px;color:var(--text2)">key skill to learn</div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="section">
+      <div class="section-title" style="color:var(--green)">Phase 4 — The Brain</div>
+      <div class="card card-green">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+          <h2 style="color:var(--green);margin:0">Let it think, remember, and talk back</h2>
+          <span class="badge badge-gray">Planned</span>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Overall progress</span><span>0%</span></div>
+          <div class="progress-bar"><div class="progress-fill p4-fill" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:0">
+        <div class="card">
+          <h3>What you build</h3>
+          <ul class="styled" style="margin-top:10px">
+            <li>USB microphone + Faster-Whisper STT on Pi</li>
+            <li>Wake word detection ("Hey [robot name]!")</li>
+            <li>Ollama LLM on home PC (Phi-3 Mini or Llama 3.2 3B)</li>
+            <li>Pi calls Ollama over WiFi — fast enough (&lt;2s response)</li>
+            <li>Piper TTS — synthesised robot voice on Pi</li>
+            <li>Persistent memory.json — names, preferences, events</li>
+            <li>Family face recognition (from Phase 2 camera)</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>What it can do</h3>
+          <ul class="styled" style="margin-top:10px">
+            <li>Hold conversations in a consistent character voice</li>
+            <li>Remember family names, facts, and preferences across sessions</li>
+            <li>Respond differently to each family member</li>
+            <li>Develop in-jokes and running stories</li>
+            <li>Announce when battery is low ("I'm hungry!")</li>
+            <li>Report what it's been doing ("I explored the kitchen today")</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <strong>Key architecture decision:</strong> The LLM does NOT run on the Pi 4 — it's too slow. Ollama runs on any capable home PC on the same WiFi network. The Pi handles audio I/O, sends text over HTTP to Ollama, and speaks the response with Piper TTS. Response latency is typically under 2 seconds on a mid-range PC, which feels natural for a robot pet.
+      </div>
+
+      <div class="grid-3" style="margin-top:0">
+        <div class="card"><div style="font-family:var(--font-mono);font-size:22px;color:var(--green);margin-bottom:4px">4–6</div><div style="font-size:12px;color:var(--text2)">weekends + ongoing</div></div>
+        <div class="card"><div style="font-family:var(--font-mono);font-size:22px;color:var(--green);margin-bottom:4px">~£15</div><div style="font-size:12px;color:var(--text2)">new parts (mostly free software)</div></div>
+        <div class="card"><div style="font-family:var(--font-mono);font-size:22px;color:var(--green);margin-bottom:4px">LLM</div><div style="font-size:12px;color:var(--text2)">prompt engineering is the skill</div></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+</body>
+</html>
